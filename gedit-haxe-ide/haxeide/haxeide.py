@@ -23,8 +23,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.dataDir = self.plugin_info.get_data_dir()
         self.toolBar = ToolBar(self)
         self.outputPanel = OutputPanel(self)
-        self.debuggerInfoPanel = DebuggerInfoPanel(self)
         self.debuggerPanel = DebuggerPanel(self)
+        self.debuggerInfoPanel = DebuggerInfoPanel(self)
+        
         self.handlerId = self.window.connect("key-press-event", self.on_view_key_press_event)
         
     def showHaxeWindow(self):
@@ -101,11 +102,10 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             
     def openFile(self, filePath, jumpTo):
         if not os.path.isfile(filePath):
-            msg = "haxeide.py : 1O4 : not os.path.isfile(filePath) : " + filePath
+            msg = "A file from this session could not be found:" + filePath
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.outputPanel.activate()
             self.outputPanel.setText(msg)
-            #print msg
             return
         #gio_file = Gio.file_new_for_path(filePath)
         gio_file = Gio.file_new_for_uri("file://" + filePath)
@@ -217,182 +217,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
         """ 
         
-    #   AVM2 FDB DEBUG
-    def debugAVM2(self, swf):
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
-        side_panel.set_property("visible", True)   
-        self.debuggerPanel.activate()
-        command = ["fdb"]
-        #cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
-        cwd=os.path.dirname(self.sf(Configuration.getHxml()))
-        
-        self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-        self.readUntilFDB(self.proc,True)
-
-        self.proc.stdin.write("run "+swf+"\n")
-        self.proc.stdin.flush()
-        self.readUntilFDB(self.proc, True)
-        
-    def sendDebugInfoCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return ""
-        if self.proc == None:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return ""
-        self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return ""
-        return self.readUntilFDB(self.proc, False)
-        
-    def sendDebugCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return
-        if self.proc == None:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return
-        self.debuggerPanel.appendText(">>>"+cmd+"\n")
-        self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return
-        if cmd == "continue":
-            self.readUntilFDB(self.proc, True)
-        elif cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.debuggerPanel.appendText(">>>y\n")  
-        elif cmd == "quit" or cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.proc = None
-            self.debuggerPanel.appendText(">>>y\n")
-        else:
-            self.readUntilFDB(self.proc, True)
     
-    def readUntilFDB(self, proc, output):
-        result = ""
-        seqPromt = ["(","f","d","b",")"]
-        #seqQuit=["(","y", "o", "r", "n", ")"]
-        counter = 0
-        tempstr = ""
-        while True:
-            c = proc.stdout.read(1)
-            result = result +c
-            if output:
-                self.debuggerPanel.appendText(c)
-            if c == seqPromt[counter]:
-                counter = counter + 1
-                tempstr = tempstr + c
-                if tempstr == "(fdb)":
-                    counter = 0
-                    tempstr = ""
-                    break
-            else:
-                counter = 0
-                tempstr = ""
-        proc.stdout.flush()
-        return result
-        
-    
-        
-    #   CPP GDB DEBUG
-    
-    def debugCPP(self, exe):
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
-        side_panel.set_property("visible", True)   
-        self.debuggerPanel.activate()
-        command = ["gdb"]
-        #cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
-        cwd=os.path.dirname(self.sf(Configuration.getHxml()))
-        
-        self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-        self.readUntilGDB(self.proc,True)
-
-        self.proc.stdin.write("run "+exe+"\n")
-        self.proc.stdin.flush()
-        self.readUntilGDB(self.proc, True)
-        
-    def sendGDBDebugInfoCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return ""
-        if self.proc == None:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return ""
-        self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return ""
-        return self.readUntilGDB(self.proc, False)
-        
-    def sendDebugCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return
-        if self.proc == None:
-            self.debuggerPanel.appendText("no debugger running\n")
-            return
-        self.debuggerPanel.appendText(">>>"+cmd+"\n")
-        self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return
-        if cmd == "continue":
-            self.readUntilGDB(self.proc, True)
-        elif cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.debuggerPanel.appendText(">>>y\n")  
-        elif cmd == "quit" or cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.proc = None
-            self.debuggerPanel.appendText(">>>y\n")
-        else:
-            self.readUntilGDB(self.proc, True)
-       
-    def readUntilGDB(self, proc, output):
-        result = ""
-        seqPromt = ["(","g","d","b",")"]
-        #seqQuit=["(","y", "o", "r", "n", ")"]
-        counter = 0
-        tempstr = ""
-        while True:
-            c = proc.stdout.read(1)
-            result = result +c
-            if output:
-                self.debuggerPanel.appendText(c)
-            if c == seqPromt[counter]:
-                counter = counter + 1
-                tempstr = tempstr + c
-                if tempstr == "(gdb)":
-                    counter = 0
-                    tempstr = ""
-                    break
-            else:
-                counter = 0
-                tempstr = ""
-        proc.stdout.flush()
-        return result
                 
     def on_view_key_press_event(self, view, event):
         """
