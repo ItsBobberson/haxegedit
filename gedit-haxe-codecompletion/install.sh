@@ -9,12 +9,15 @@ USER_ICONS_FOLDER="$HOME/.local/share/icons"
 #root paths
 ROOT_GEDIT_SCHEMAS_FOLDER="/usr/share/glib-2.0/schemas"
 ROOT_GEDIT_PLUGINS_FOLDER="/usr/lib/gedit/plugins"
+ROOT_GEDIT_PLUGINS_DATA_FOLDER="/usr/share/gedit/plugins/haxecodecompletion"
 ROOT_ICONS_FOLDER="/usr/share/icons"
 
 #create directories for the plugin files
 if [ `whoami` != 'root' ]; then
 	mkdir -p "$USER_GEDIT_PLUGINS_FOLDER"
 	mkdir -p "$USER_ICONS_FOLDER"
+else
+	mkdir -p "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
 fi
 
 #install a file
@@ -39,6 +42,8 @@ if [ `whoami` = 'root' ]; then
 	copy_file 'haxecodecompletion.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
 	copy_file 'haxecodecompletionlogo.png' "$ROOT_ICONS_FOLDER"
 	copy_folder 'haxecodecompletion' "$ROOT_GEDIT_PLUGINS_FOLDER"
+	copy_folder 'haxecodecompletion/ui' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
+	copy_folder 'haxecodecompletion/icons' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
 	echo "Recompiling: glib-compile-schemas $ROOT_GEDIT_SCHEMAS_FOLDER"
 	glib-compile-schemas "$ROOT_GEDIT_SCHEMAS_FOLDER"
 else

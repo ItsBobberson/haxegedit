@@ -26,7 +26,7 @@ import time
 from complete import haxe_complete
 import configurationdialog
 import configuration
-
+from ApiInfoPanel import ApiInfoPanel
 from configurationdialog import ConfigurationDialog
 from completionwindow import CompletionWindow
 
@@ -56,6 +56,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         callback = self.on_window_tab_added
         handler_id = self.window.connect("tab-added", callback)
         handler_ids.append(handler_id)
+        self.apiInfoPanel = ApiInfoPanel(self)
         self.window.set_data(self.name, handler_ids)
         for view in self.window.get_views():
             self.connect_view(view)
@@ -77,6 +78,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         
     def do_deactivate(self):
         """Deactivate plugin."""
+        self.apiInfoPanel.remove()
         widgets = [self.window]
         widgets.append(self.window.get_views())
         widgets.append(self.window.get_documents())
@@ -181,6 +183,37 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         text_copy_1 = text[:insert.get_offset ()]
         text_copy_1 = text_copy_1.replace("\\\"","").replace ("\\\'","");
         text_copy_1 = re.sub (self.re_multiline_comments,"",text_copy_1); #ignore multi-line comments
+        """ remove slashes inside of strings """
+        quote_open = False
+        quote_type = ''
+        last_char_slash = False
+        comment_open = False
+        for i1, c1 in enumerate(text_copy_1):
+            if c1 == '\"':
+	        if (quote_open) and (quote_type == '\"'):
+                    quote_open = False
+                    quote_type = ''
+                if (not quote_open) and (not comment_open):
+                    quote_open = True
+                    quote_type = '\"'
+            elif c1 == '\'':
+                if (quote_open) and (quote_type == '\''):
+                    quote_open = False
+                    quote_type = ''
+                if (not quote_open) and (not comment_open):
+                    quote_open = True
+                    quote_type = '\''
+            elif c1 == '/':
+                if last_char_slash and (not quote_open):
+                    comment_open = True
+                if quote_open:
+                    text_copy_1 = text_copy_1[:i1] + text_copy_1[i1+1:]
+                last_char_slash = True
+            elif c1 == '\n':
+                comment_open = False
+            else:
+                last_char_slash = False
+        """ remove slashes inside of strings done """
         text_copy_1 = re.sub (self.re_singleline_comments,"",text_copy_1); #ignore single-line comments 
 
         quote_exists = True
@@ -273,6 +306,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         popup = self.w
         """
         popup = CompletionWindow(self.window, self)
+        popup.apiInfoPanel = self.apiInfoPanel
         # Set its font accordingly
         context = view.get_pango_context()
         font_desc = context.get_font_description()
