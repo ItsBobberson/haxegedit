@@ -32,6 +32,8 @@ class SettingsFrame(Gtk.Frame):
         self.builder.get_object("enterCompleteBtn").set_active(Configuration.getEnterComplete())
         self.builder.get_object("nonAlphaCompleteBtn").set_active(Configuration.getNonAlphaComplete())
         self.builder.get_object("doubleDotCompleteBtn").set_active(Configuration.getDoubleDotComplete())
+        self.builder.get_object("showApiInfoPanelBtn").set_active(Configuration.getShowApiInfoPanel())
+        self.builder.get_object("autoHideApiInfoPanelBtn").set_active(Configuration.getAutoHideApiInfoPanel())
         
         
         #    Project
@@ -117,6 +119,12 @@ class SettingsFrame(Gtk.Frame):
             
     def onSpaceCompleteToggle(self, button):
         Configuration.setSpaceComplete(button.get_active())
+    
+    def onShowApiInfoPanelToggle(self, button):
+        Configuration.setShowApiInfoPanel(button.get_active())
+        
+    def onAutoHideApiInfoPanelToggle(self, button):
+        Configuration.setAutoHideApiInfoPanel(button.get_active())
     
     def onTabCompleteToggle(self, button):
         Configuration.setTabComplete(button.get_active())

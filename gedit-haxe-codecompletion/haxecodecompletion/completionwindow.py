@@ -210,6 +210,9 @@ class CompletionWindow(Gtk.Window):
         self.current_completions = []
         self.tempstr = ""
         #self.hide()
+        if configuration.getAutoHideApiInfoPanel():
+            bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+            bottom_panel.set_property("visible", False)
         self.destroy()
         
     def focus_out_event(self, *args):
@@ -220,25 +223,38 @@ class CompletionWindow(Gtk.Window):
         selection = self.view.get_selection()
         if selection == None:
             return None
+            
+        print "227 : def get_selected(self):"
+        print "selection.get_selected_rows(): %s1 %s2" % selection.get_selected_rows()
+        print "selection.get_selected_rows()[1]: %s" % (selection.get_selected_rows()[1])
+        print "selection.get_selected_rows()[1][0]: %s" % (selection.get_selected_rows()[1][0])
+        print "selection.get_selected_rows()[1][0].get_indices(): %s" % (selection.get_selected_rows()[1][0].get_indices())
+        print "selection.get_selected_rows()[1][0].get_indices()[0]: %s" % (selection.get_selected_rows()[1][0].get_indices()[0])
+        print "---------------"
         return selection.get_selected_rows()[1][0].get_indices()[0]
 
     def row_selected(self, treeview, data = None):
         selection = self.get_selected ()
         if selection == None:
             return
+            
+        print "241 : def row_selected(self, treeview, data = None):"
+        print "selection: %s" % selection
+        print "len(self.current_completions): %s" % (len(self.current_completions))
+        print "self.current_completions[ selection ]: %s" % (self.current_completions[ selection ])
+        print "---------------------------------------------------------------------------------"
         dict = self.current_completions[ selection ]
         apiInfo = ""
         if 'word' in dict:
             apiInfo = dict['word'] + "\n"
         if 'info' in dict:
             apiInfo = apiInfo + dict['info']
+        if configuration.getShowApiInfoPanel():
+            bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+            bottom_panel.set_property("visible", True)
+            self.apiInfoPanel.setText(apiInfo)
+            self.apiInfoPanel.activate()
         
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        self.apiInfoPanel.activate()
-        self.apiInfoPanel.setText(apiInfo)
-
-
     def row_activated(self, tree, path, view_column, data = None):
         """ The user chose a completion, so terminate it. """
         self.complete()
