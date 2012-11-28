@@ -48,15 +48,32 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         out = proc.communicate ()
         str0 = out[0]
         str1 = out[1]
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+
         if proc.returncode != 0:
-            bottom_panel.set_property("visible", True)
+            Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.bottomPanel.setText(out[1])
         else:
-            self.openFile(destinationFolder + "/" + folderName+ "/" + "build.hxml", True)
-            self.openFile(destinationFolder + "/" + folderName + "/" + "src" +"/" "Main.hx", True)
-            self.setFileBrowserRoot(destinationFolder + "/" + folderName)
-            self.setHxml(destinationFolder + "/" + folderName+ "/" + "build.hxml")
+            if len(package) == 0:
+                packagePart = ""
+            else:
+                packagePart = package.replace(".", "/") + "/"
+            
+            mainNameParts = mainName.split(".")
+            mainShortName = mainNameParts[len(mainNameParts)-1]
+            
+            main = destinationFolder + "/" + folderName + "/" + "src" +"/" + packagePart + mainShortName+".hx"
+            hxml = destinationFolder + "/" + folderName+ "/" + "build.hxml"
+            root = destinationFolder + "/" + folderName
+            
+            print root
+            print main
+            print hxml
+            
+            self.openFile(hxml, True)
+            self.openFile(main, True)
+            
+            self.setFileBrowserRoot(root)
+            self.setHxml(hxml)
 
     def openProject(self, hxml, useHxml, setRoot ):
         self.openFile(hxml, True)
@@ -99,7 +116,12 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         #print os.path.exists(filePath)
         #print os.path.isfile(filePath)
         if not os.path.isfile(filePath):
+            msg = "haxeide.py : 119 : not os.path.isfile(filePath) : " + filePath
+            Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
+            self.bottomPanel.setText(msg)
+            print msg
             return
+            
         uri = "file://" + filePath
         #Gio.file_new_for_path(os.path.expanduser('~')
         #gio_file = Gio.file_new_for_path(filePath)
@@ -125,7 +147,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
             side_panel.set_property("visible", True)
         else:
-            bottom_panel.set_property("visible", True)
+            Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
             #print relies on the file browser plugin
    
