@@ -38,6 +38,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     file = open (fullpath, "w")
     file.write (origdoc)
     file.close ()
+
     errorInfoPath=""
     
     if hxmlfile != None and hxmlfile != "":
@@ -57,36 +58,58 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
 
     proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=basedir)
     out = proc.communicate ()
-
+    """
+    print "proc.returncode:"
+    print proc.returncode
+    print "-------------------"
+    print "out[0]:"
+    print out[0]
+    print "-------------------"
+    print "out[1]:"
+    print out[1]
+    print "-------------------"
+    """
     str = out[1]
     begin = str.find ("<list>")
     if begin != -1:
         str = str[begin:]
+    typeList = str.find ("<type>") != -1
+        
 
     already = set () # FIXME : haxe compiler outputs two times package names.
     result = None
     try:
         if proc.returncode == 0:
             xmldom = parseString (str)
-            list = xmldom.getElementsByTagName ('i')
-            result = []
-            for item in list:
-                dict = {}
-                val = item.attributes["n"].value
-                if val in already: continue # FIXME
-                dict["abbr"] = val
-                already.add (val) # FIXME
-                dict["type"] = ""
-                try:
-                    dict["type"] = item.getElementsByTagName ('t')[0].childNodes[0].nodeValue
-                except Exception, e:
-                    pass
-                dict["word"] = make_word (dict["abbr"], dict["type"])
-                result.append (dict)
+            if typeList:
+                list = xmldom.getElementsByTagName ('type')
+                result = []
+                for item in list:
+                    result.append ({"word":item.childNodes[0].nodeValue, "type":item.childNodes[0].nodeValue})
+            else:
+                list = xmldom.getElementsByTagName ('i')
+                result = []
+                for item in list:
+                    dict = {}
+                    val = item.attributes["n"].value
+                    if val in already: continue # FIXME
+                    dict["abbr"] = val
+                    already.add (val) # FIXME
+                    dict["type"] = ""
+                    try:
+                        dict["type"] = item.getElementsByTagName ('t')[0].childNodes[0].nodeValue
+                    except Exception, e:
+                        pass
+                    dict["word"] = make_word (dict["abbr"], dict["type"])
+                    result.append (dict)
         else:
             result = []
-            result.append({"word":"Error: "+str})
-            result.append({"word":"Using hxml: "+errorInfoPath})
+            errorLines = str.split("\n");
+            for l in errorLines:
+                if l != "":
+                    result.append({"word":l, "error":l})
+            #result.append({"word":"Error: "+str, "error":str})
+            result.append({"word":"Using hxml: "+errorInfoPath, "hxml":errorInfoPath})
               
     except Exception, e:
         result = []

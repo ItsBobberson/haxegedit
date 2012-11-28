@@ -175,6 +175,9 @@ def setKeybindingComplete(keybinding):
     __keybindingComplete = keybinding
     __keybindingCompleteTuple = {}
 
+def getHxml():
+    return __client.get_string(GCONF_HXML_PATH)
+    
 def getHxmlFile():
 	global HXML_FILE
 	#return HXML_FILE
