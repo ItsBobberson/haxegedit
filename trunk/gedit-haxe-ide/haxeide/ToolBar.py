@@ -65,6 +65,9 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.sessionButton.set_tooltip_text('Save session')
         self.sessionButton.set_sensitive(False)
         
+        self.debugButton.set_tooltip_text('Debugger')
+        self.debugButton.set_sensitive(False)
+        
         self.buildButton.set_tooltip_text('Build project')
         self.buildButton.set_is_important(True)
         self.buildButton.set_label("no hxml")
@@ -134,6 +137,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         
         self.buildButton.set_label(label)
         self.buildButton.set_sensitive(True)
+        self.debugButton.set_sensitive(True)
         self.hxmlButton.set_tooltip_text(hxml)
         self.sessionButton.set_sensitive(True)
         
