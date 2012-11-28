@@ -36,7 +36,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
         offset=offset+2
     os.rename (fullpath, fullpath + ".bak")
     file = open (fullpath, "w")
-    file.write (origdoc)
+    file.write (origdoc.encode('utf-8'))
     file.close ()
 
     errorInfoPath=""
