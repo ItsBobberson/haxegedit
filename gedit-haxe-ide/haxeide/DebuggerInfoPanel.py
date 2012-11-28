@@ -37,216 +37,135 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         self.geditSidePanel.remove_item(self.scrolledWindow)
  
     def onRefreshButtonClick(self, button):
+        self.setStack()
+        self.setLocals()
+        self.setArgs()
+        self.setThis()
+        self.setBreakPoints()
+        self.setFiles()
+        self.setVariables()
+        #self.setFunctions()
+        #self.setScopeChain()
+        
+    def setFiles(self):
+        filesTreeView = self.builder.get_object("filesTreeView")
+        if len(filesTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("file", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            filesTreeView.append_column(col)
+        result = self.plugin.sendDebugInfoCommand("info files")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str)
+        for line in lines:
+            if line != '(fdb)':
+                ls.append([line])       
+        filesTreeView.set_model(ls)
+        
+    def setLocals(self):
+        localsTreeView = self.builder.get_object("localsTreeView")
+        if len(localsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            localsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            localsTreeView.append_column(col)  
+        result = self.plugin.sendDebugInfoCommand("info locals")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        localsTreeView.set_model(ls)
+        
+    def setVariables(self):
+        varsTreeView = self.builder.get_object("varsTreeView")
+        if len(varsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            varsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            varsTreeView.append_column(col)
+        result = self.plugin.sendDebugInfoCommand("info variables")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        varsTreeView.set_model(ls)
+            
+    def setArgs(self):
+        argsTreeView = self.builder.get_object("argsTreeView")
+        if len(argsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            argsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            argsTreeView.append_column(col)
+        result = self.plugin.sendDebugInfoCommand("info arguments")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        argsTreeView.set_model(ls)
+        
+    def setStack(self):
+        stackTreeView = self.builder.get_object("stackTreeView")
+        stackTreeView.set_headers_visible(False)
+        if len(stackTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("info stack", Gtk.CellRendererText(), text=0)
+            col.set_resizable (True) 
+            stackTreeView.append_column(col)
         result = self.plugin.sendDebugInfoCommand("info stack")
-        #print result
-        listStore1 = Gtk.ListStore(str) #, list) #Gio.Icon, str, GObject.Object, Gio.FileType)
         lines = result.split("\n")
+        ls = Gtk.ListStore(str)
         for line in lines:
             if line != '(fdb)':
-                print line
-                listStore1.append([line])
-        self.builder.get_object("stackTreeView").set_model(listStore1)
+                parts = line.split(" at ")
+                ls.append([parts[-1]])
+        stackTreeView.set_model(ls)
         
+    def setBreakPoints(self):    
+        breakPointsTreeView = self.builder.get_object("breakPointsTreeView")
+        if len(breakPointsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            breakPointsTreeView.append_column(col)
+        result = self.plugin.sendDebugInfoCommand("info breakpoints")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str)
+        for line in lines:
+            if line != '(fdb)' and not line.startswith("  "):
+                ls.append([line])
+        breakPointsTreeView.set_model(ls)
+        
+    def setThis(self):
+        thisTreeView = self.builder.get_object("thisTreeView")
+        if len(thisTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            thisTreeView.append_column(col)
+            
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            thisTreeView.append_column(col)
         result = self.plugin.sendDebugInfoCommand("print this.")
-        listStore = Gtk.ListStore(str) #, list) #Gio.Icon, str, GObject.Object, Gio.FileType)
         lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
         for line in lines:
             if line != '(fdb)':
-                print line
-                listStore.append([line])
-        self.builder.get_object("thisTreeView").set_model(listStore)
-        self.builder.get_object("scrolledWindow").show_all()
-        self.builder.get_object("stackTreeView").show_all()
-        self.builder.get_object("thisTreeView").show_all()
-        
-    """        
-    def onQuitButtonClick(self, button):
-        self.plugin.sendDebugCommand("quit")
-        self.builder.get_object("urlBox").show()
-        self.builder.get_object("buttonBox").hide()
-            
-    def onBreakButtonClick(self, button):
-        fileLine = self.getFileLine()
-        if fileLine != None:
-            self.plugin.sendDebugCommand("break "+fileLine)        
-            
-    def onClearButtonClick(self, button):
-        fileLine = self.getFileLine()
-        if fileLine != None:
-            self.plugin.sendDebugCommand("clear "+fileLine)
-            
-    def onKillButtonClick(self, button):    
-        self.plugin.sendDebugCommand("kill")
-    
-    def onNextButtonClick(self, button):
-        self.plugin.sendDebugCommand("next")
-        
-    def onContinueButtonClick(self, button):
-        self.plugin.sendDebugCommand("continue")
-        
-    def onFinishButtonClick(self, button):
-        self.plugin.sendDebugCommand("finish")
-    def onStepButtonClick(self, button):
-        self.plugin.sendDebugCommand("step")
-        
-    def onBreakDelAllButtonClick(self, button)
-        doc = self.geditWindow.get_active_document()
-        if not doc.get_uri_for_display().endswith ('hx'):
-            self.appendText("Can only set breakpoints in .hx file.\n")
-            return
-        insert = doc.get_iter_at_mark(doc.get_insert())
-        lineOffset = insert.get_line()+1
-        filePath = doc.get_uri_for_display()
-        dirName = os.path.dirname(filePath)
-        fileName = os.path.basename(filePath)
-        self.plugin.sendDebugCommand("break "+fileName+":"+str(lineOffset))
-        
-     
-    def getFileLine(self):
-        doc = self.geditWindow.get_active_document()
-        if not doc.get_uri_for_display().endswith ('hx'):
-            self.appendText("Can only set breakpoints in .hx file.\n")
-            return None
-        insert = doc.get_iter_at_mark(doc.get_insert())
-        lineOffset = insert.get_line()+1
-        filePath = doc.get_uri_for_display()
-        dirName = os.path.dirname(filePath)
-        fileName = os.path.basename(filePath)
-        return fileName+":"+str(lineOffset)
-        
-    
-       
-    def onTextViewClick(self, textView, event):
-        if event.type == Gdk.EventType._2BUTTON_PRESS:
-            errorInfo = self.parseErrorLine()
-            if errorInfo == None:
-                return True
-            characterRange = errorInfo['characterRange']
-            if characterRange.find('-') == -1:
-                characterRange = characterRange + "-" + characterRange
-            charRange = characterRange.split("-")
-            charRangeStart = int(charRange[0])
-            charRangeEnd = int(charRange[1])
-            lineNr = int(errorInfo['lineNumber'])
-            offset = charRangeEnd
-            if errorInfo['error'].startswith('Unexpected'):
-                offset = charRangeStart
-
-            if errorInfo['fileLocation'][0] == "/" :
-                path = "/" + errorInfo['fileLocation']
-            else:
-                hxml = self.plugin.sf(Configuration.getHxml())
-                path = os.path.dirname(hxml) + "/" + errorInfo['fileLocation']
-                
-            gio_file = Gio.file_new_for_path(path)
-            tab = self.geditWindow.get_tab_from_location(gio_file)
-            if tab == None:
-                tab = self.geditWindow.create_tab_from_location(gio_file, None, lineNr, offset+1, False, True )
-            else:
-                self.geditWindow.set_active_tab(tab)
-                view = self.geditWindow.get_active_view()
-                buf = view.get_buffer() 
-                i = buf.get_iter_at_line_offset(lineNr - 1, offset)
-                buf.place_cursor(i)
-                view.scroll_to_cursor()
-
-            if errorInfo['error'].find(' should be ') != -1 or errorInfo['error'].startswith('Unknown identifier') or errorInfo['error'].startswith('Class not found'):
-                view = self.geditWindow.get_active_view()
-                buf = view.get_buffer()
-                
-                insertMark = buf.get_insert()
-                selectionBoundMark = buf.get_selection_bound()
-                startIter = buf.get_iter_at_mark(insertMark)
-                startIter.backward_chars(charRangeEnd - charRangeStart)
-                buf.move_mark(selectionBoundMark, startIter)
-                
-            if errorInfo['error'].startswith('Unexpected'):
-                view = self.geditWindow.get_active_view()
-                buf = view.get_buffer()
-                
-                insertMark = buf.get_insert()
-                selectionBoundMark = buf.get_selection_bound()
-                startIter = buf.get_iter_at_mark(insertMark)
-                startIter.forward_chars(charRangeEnd - charRangeStart)
-                buf.move_mark(selectionBoundMark, startIter)
-                
-            if errorInfo['error'].startswith("Invalid character"):
-                view = self.geditWindow.get_active_view()
-                buf = view.get_buffer()
-                
-                insertMark = buf.get_insert()
-                selectionBoundMark = buf.get_selection_bound()
-                startIter = buf.get_iter_at_mark(insertMark)
-                startIter.forward_chars(1)
-                buf.move_mark(selectionBoundMark, startIter)
-
-            return True
-                        
-        if event.type == Gdk.EventType._3BUTTON_PRESS:
-            errorInfo = self.parseErrorLine()
-            if errorInfo != None and errorInfo['errorLine'].endswith("Missing ;"):
-                self.geditWindow.get_active_document().insert_at_cursor (";")
-            return True
-        
-    def parseErrorLine(self):
-        doc = self.textView.get_buffer()
-        iter = doc.get_iter_at_mark(doc.get_insert())
-        lineStart = iter.copy()
-        lineEnd = iter.copy()
-        lineStart.set_offset (iter.get_offset () - iter.get_line_offset ())
-        
-        #get the complete line
-        lineEnd.forward_to_line_end()
-        currentLine = unicode (doc.get_text (lineStart, lineEnd, include_hidden_chars=True))
-        if len(currentLine)==0:
-            return None
-        #print currentLine;
-        
-        #get the file location
-        locationEnd = lineStart.copy()
-        while locationEnd.forward_char():
-            char = unicode(locationEnd.get_char())
-            if char == ":":
-                fileLocation = unicode (doc.get_text (lineStart, locationEnd, include_hidden_chars=True))
-                lineNumberEnd = locationEnd.copy()
-                #print fileLocation
-                break
-        try:
-            lineNumberEnd
-        except NameError:
-            return None
-            
-        #get the line number
-        locationEnd.forward_char()#skip colon
-        while lineNumberEnd.forward_char():
-            char = unicode(lineNumberEnd.get_char())
-            if char == ":":
-                lineNumber = unicode (doc.get_text (locationEnd, lineNumberEnd, include_hidden_chars=True))
-                #print lineNumber
-                break
-        
-        #get character range
-        lineNumberEnd.forward_char()#skip colon
-        lineNumberEnd.forward_char()#skip space
-        lineNumberEnd.forward_word_end()#skip 'characters'
-        lineNumberEnd.forward_char()#skip space
-        characterRangeEnd = lineNumberEnd.copy()
-        while characterRangeEnd.forward_char():
-            char = unicode(characterRangeEnd.get_char())
-            if char == " ":
-                characterRange = unicode (doc.get_text (lineNumberEnd, characterRangeEnd, include_hidden_chars=True))
-                #print characterRange
-                break
-        
-        #get error
-        characterRangeEnd.forward_char()#skip space
-        characterRangeEnd.forward_char()#skip colon
-        characterRangeEnd.forward_char()#skip space
-        errorEnd = characterRangeEnd.copy()
-        errorEnd.forward_sentence_end()
-        error = unicode (doc.get_text (characterRangeEnd, errorEnd, include_hidden_chars=True))
-        
-        return {'errorLine':currentLine, 'fileLocation':fileLocation, 'lineNumber':lineNumber, 'characterRange':characterRange, 'error':error}
-    """        
-    
-       
+                parts = line.split(" = ")
+                if len(parts)==3:
+                    self.builder.get_object("thisLabel").set_text("["+ parts[-1].split(", ")[-1])
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        thisTreeView.set_model(ls)

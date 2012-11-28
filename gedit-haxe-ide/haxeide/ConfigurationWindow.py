@@ -12,7 +12,6 @@ class ConfigurationWindow(Gtk.Window):
         
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.set_title("haXedit")
-        #self.set_icon(Gtk.Image.new_from_file(self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png"))
         self.set_icon_from_file(self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png")
         self.set_size_request(1000,600)
         self.set_position(Gtk.WindowPosition.CENTER);

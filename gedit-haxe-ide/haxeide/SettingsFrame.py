@@ -72,7 +72,6 @@ class SettingsFrame(Gtk.Frame):
             change[0](change[1])
         self.updateKeybindingCompleteButtons(False)
 
-
     # Keybinding for Building
     
     def getKeybindingBuild(self):
@@ -97,8 +96,7 @@ class SettingsFrame(Gtk.Frame):
         for change in self.buildChanges:
             change[0](change[1])
         self.updateKeybindingBuildButtons(False)
-    
-    
+
     #various flags
 
     def onUseDotCompleteToggle(self, button):

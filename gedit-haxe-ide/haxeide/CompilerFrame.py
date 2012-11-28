@@ -1,6 +1,5 @@
 from gi.repository import GObject, Gtk, Gdk, Gedit
 import string
-#from SettingsFrame import SettingsFrame
 import Configuration
 
 class CompilerFrame(Gtk.Frame):
@@ -18,34 +17,3 @@ class CompilerFrame(Gtk.Frame):
         
         self.vbox = self.builder.get_object("vbox")
         self.add(self.vbox)
-        
-        #uri = Configuration.getProjectsLocation()
-        #if uri !=None and uri!="":
-            #self.builder.get_object("filechooser").set_current_folder_uri(uri)
-            
-        #self.show_all()
-    """    
-    def onCreateProjectButtonClick(self, button):
-        destinationFolder = self.builder.get_object("locationInput").get_text()
-        projectFolder = self.builder.get_object("nameInput").get_text()
-        mainFile = self.builder.get_object("mainInput").get_text()
-        if(destinationFolder != "" and projectFolder != "" and mainFile !=""):
-            target = "flash"
-            if self.builder.get_object("jsCheckBtn").get_active():
-                target = "js"
-            elif self.builder.get_object("phpCheckBtn").get_active():
-                target = "php"
-            elif self.builder.get_object("nekoCheckBtn").get_active():
-                target = "neko"
-            elif self.builder.get_object("cppCheckBtn").get_active():
-                target = "cpp"
-            self.plugin.createProject(destinationFolder, projectFolder, mainFile, target)
-            self.win.destroy()
-        else:
-            pass
-    
-    def onFolderSelect(self,fileChooser):
-        fn = fileChooser.get_filename()
-        if fn != None:
-            self.builder.get_object("locationInput").set_text(fn)
-    """
