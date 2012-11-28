@@ -43,13 +43,12 @@ if [ `whoami` = 'root' ]; then
 	copy_folder 'haxeide/ui' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
 	copy_folder 'haxeide/icons' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
 	copy_folder 'haxeide/scripts' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
-	echo "Recompiling: glib-compile-schemas"
+	echo "Recompiling: glib-compile-schemas $ROOT_GEDIT_SCHEMAS_FOLDER"
 	glib-compile-schemas "$ROOT_GEDIT_SCHEMAS_FOLDER"
 else
 	copy_file 'haxeide.plugin' "$USER_GEDIT_PLUGINS_FOLDER"
 	copy_folder 'haxeide' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
 
-echo "Done installing."
-echo "Restart gedit to complete the installation.\n"
+echo "Done installing haXe IDE plugin.\n"
 

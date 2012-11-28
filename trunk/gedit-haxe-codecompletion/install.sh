@@ -20,26 +20,26 @@ fi
 #install a file
 copy_file() 
 {
-	echo "Adding file $1 to $2"
+	echo "Adding file: $1, to: $2"
 	cp "$1" "$2" || exit 1
 }
 
 #install a folder
 copy_folder() 
 {
-	echo "Adding folder $1 to $2"
+	echo "Adding folder: $1, to: $2"
 	cp -r "$1" "$2" || exit 1
 }
 
 # Start installing haxe code completion plugin by copying the files to the correct folders
-echo "*** Installing haXe codecompletion plugin for GEdit 3.x ***"
+echo "*** Installing haXe Code Completion plugin for GEdit 3.x ***"
 
 if [ `whoami` = 'root' ]; then
 	copy_file 'org.gnome.gedit.plugins.haxecodecompletion.gschema.xml' "$ROOT_GEDIT_SCHEMAS_FOLDER"
 	copy_file 'haxecodecompletion.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
 	copy_file 'haxecodecompletionlogo.png' "$ROOT_ICONS_FOLDER"
 	copy_folder 'haxecodecompletion' "$ROOT_GEDIT_PLUGINS_FOLDER"
-	echo "Recompiling: glib-compile-schemas"
+	echo "Recompiling: glib-compile-schemas $ROOT_GEDIT_SCHEMAS_FOLDER"
 	glib-compile-schemas "$ROOT_GEDIT_SCHEMAS_FOLDER"
 else
 	copy_file 'haxecodecompletion.plugin' "$USER_GEDIT_PLUGINS_FOLDER"
@@ -47,6 +47,5 @@ else
 	copy_folder 'haxecodecompletion' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
 
-echo "Done installing."
-echo "Restart gedit to complete the installation.\n"
+echo "Done installing haXe Code Completion plugin.\n"
 
