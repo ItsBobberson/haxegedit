@@ -25,7 +25,7 @@ remove_folder()
 	fi
 }
 
-echo "\nUninstalling haXe codecompletion plugin for gedit 3.x\n"
+echo "\n*** Uninstalling haXe codecompletion plugin for gedit 3.x ***\n"
 if [ `whoami` = 'root' ]; then
 	remove_file 'org.gnome.gedit.plugins.haxecodecompletion.gschema.xml' "$ROOT_GEDIT_SCHEMAS_FOLDER"
 	remove_file 'haxecodecompletion.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
@@ -38,4 +38,6 @@ else
 	remove_file 'haxecodecompletionlogo.png' "$USER_ICONS_FOLDER"
 	remove_folder 'haxecodecompletion' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
+
+echo "\nDone uninstalling.\n"
 

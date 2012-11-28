@@ -11,6 +11,8 @@ USER_MIME_PACKAGES_FOLDER="$HOME/.local/share/mime/packages"
 LANGSPEC_FILE="haxe.lang"
 MIME_FILE="haxe.xml"
 
+echo "\n*** Uninstalling haXe syntax files for highlighting ***\n"
+
 if [ `whoami` = 'root' ]; then
 
 	if [ -f "$ROOT_MIME_PACKAGES_FOLDER/$MIME_FILE" ]; then
@@ -41,4 +43,4 @@ else
 	fi
 fi
 
-echo "*** Done removing the haXe syntax file for highlighting ***"
+echo "\nDone uninstalling.\n"

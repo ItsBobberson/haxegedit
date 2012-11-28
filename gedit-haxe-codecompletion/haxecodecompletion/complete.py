@@ -101,7 +101,7 @@ def haxe_complete (fileloc, origdoc, offset):
     classname = filename[:-3]
     
     hxmlfile = configuration.getHxmlFile()
-    if hxmlfile !=None:
+    if hxmlfile != None:
     	dirname = os.path.dirname(hxmlfile)
 
     basedir = dirname # by default

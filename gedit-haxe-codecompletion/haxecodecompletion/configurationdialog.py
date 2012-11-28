@@ -13,27 +13,14 @@
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#import gtk
-#import gtk.gdk
+import os
 from gi.repository import GObject, Gtk, Gedit, PeasGtk# Gdk, Peas, 
 import logging
 import keybindingwidget
 import configuration
 
-TEXT_KEYBINDING = "Change keybinding:"
-TEXT_TITLE = "Configure haXe code completion"
-TEXT_HXMLFILE = "hxml file:"
-DEFAULT_WINDOW_WIDTH = 370
-DEFAULT_WINDOW_HEIGHT = 0
-LOG_NAME = "ConfigurationDialog"
-
-log = logging.getLogger(LOG_NAME)
-
-#class ConfigurationDialog(Gtk.Dialog):
-class ConfigurationDialog():#GObject.Object)#, Gedit.AppActivatable, PeasGtk.Configurable): 
+class ConfigurationDialog(): 
     __gtype_name__ = "HaxeCompletionPluginConfig"
-    #window = GObject.property(type=Gedit.Window)
-    #app = GObject.property(type=Gedit.App)
 
     def __init__(self):
         pass
@@ -48,91 +35,93 @@ class ConfigurationDialog():#GObject.Object)#, Gedit.AppActivatable, PeasGtk.Con
     def do_update_state(self):
         pass
 
-    #def do_create_configure_widget(self):
     def create_widget(self):
-        
-        #Gtk.Dialog.__init__(self)
-        #self.set_border_width(5)
-        #self.set_title(TEXT_TITLE)
-        #self.set_default_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
-        checkButton = Gtk.CheckButton("Use dot competion")
-        checkButton.set_active(configuration.getDotComplete())
-        #checkButton.set_border_width(6)
-        checkButton.connect('toggled', self.on_check_button_toggled)
-
         self.changes = []
         keybinding = configuration.getKeybindingComplete()
-        log.info("Got keybinding from gconf %s" % str(keybinding))
-        #label = Gtk.Label(keybinding)
-        
-        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.vbox.pack_start(checkButton, True, True, 0)
-        
         self.__setKeybinding(keybinding)
         
-        self.table = Gtk.Table(2, 2, homogeneous=False)
-        self.table.set_row_spacings(4)
-        self.table.set_col_spacings(4)
-        self.vbox.pack_start(self.table, expand=False, fill=False, padding=4) 
+        checkButton = Gtk.CheckButton("Use dot completion")
+        checkButton.set_active(configuration.getDotComplete())
+        checkButton.connect('toggled', self.on_check_button_toggled)
+
+        self.keybindingInput = keybindingwidget.KeybindingWidget()
+        self.keybindingInput.setKeybinding(keybinding)
+        self.keybindingInput.connect("keybinding-changed", self.on_keybinding_changed)
+
         
-        lblKeybinding = Gtk.Label()
-        lblKeybinding.set_text(TEXT_KEYBINDING)
-        self.table.attach(lblKeybinding, 0, 1, 0, 1, xoptions=False, yoptions=False)
-        
-        self.__kbWidget = keybindingwidget.KeybindingWidget()
-        self.__kbWidget.setKeybinding(keybinding)
-        self.table.attach(self.__kbWidget, 1, 2, 0, 1, xoptions=False, yoptions=False)
-        
-        """
-        lblhxmlfile = Gtk.Label()
-        lblhxmlfile.set_text(TEXT_HXMLFILE)
-        self.table.attach(lblhxmlfile,0 , 1, 1, 2, xoptions=False, yoptions=False)
-        
-        #self.__fcDialog = Gtk.FileChooserDialog("Select HXML file",self,Gtk.FILE_CHOOSER_ACTION_OPEN,(Gtk.STOCK_CANCEL,Gtk.RESPONSE_CANCEL,Gtk.STOCK_OPEN,Gtk.RESPONSE_OK))
-        self.__fcDialog = Gtk.FileChooserDialog("Select HXML file",self,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))
+        self.hxmlfolderLabel = Gtk.Label()
+        self.fileChooserBtn = Gtk.FileChooserButton("Select HXML file",Gtk.FileChooserAction.OPEN)#,(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN,Gtk.ResponseType.OK))        
+        self.fileChooserBtn.set_size_request(200, 20)
+        filter = Gtk.FileFilter()
+        filter.add_pattern("*.hxml")
+        self.fileChooserBtn.add_filter(filter)
+        self.handler_id = self.fileChooserBtn.connect("file-set", self.onHxmlFileSelect)
+        self.handler_id2 = self.fileChooserBtn.connect("selection-changed", self.onHxmlFileSelect)
         oldFile = configuration.getHxmlFile()
         if oldFile != None:
-        	self.__fcDialog.set_filename(oldFile)
-        self.__fcDialog.connect('response',self.__closeFC,self);
+            self.hxmlfolderLabel.set_text(os.path.dirname (oldFile))
+            self.fileChooserBtn.set_filename(oldFile)
         
-        self.__fcWidget = Gtk.FileChooserButton(self.__fcDialog)
+        self.hbox0 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        #self.hbox0.set_halign(Gtk.Align.FILL)
+        self.hbox0.pack_start(self.hxmlfolderLabel, expand=True, fill=True, padding=0)
+        self.hbox0.pack_start(self.fileChooserBtn, expand=True, fill=True, padding=0)
         
-        self.table.attach(self.__fcWidget,1 ,2 ,1 ,2 , xoptions=False, yoptions=False)
-        """
+        self.table = Gtk.Table(2, 2, homogeneous=True)
+        self.table.set_row_spacings(10)
+        self.table.set_col_spacings(10)
+        l0 = Gtk.Label("Change keybinding:")
+        #l0.set_halign(Gtk.Align.END)
+        self.table.attach(l0, 0, 1, 0, 1, xoptions=False, yoptions=False)
+        self.table.attach(self.keybindingInput, 1, 2, 0, 1, xoptions=False, yoptions=False)
         
-        # Buttons in the action area
-        self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.__btnApply = Gtk.Button(stock=Gtk.STOCK_APPLY)
-        self.__btnApply.set_sensitive(False)
+        l1 = Gtk.Label("Set hxml file:")
+        #l1.set_halign(Gtk.Align.END)
+        self.table.attach(l1, 0, 1, 1, 2, xoptions=False, yoptions=False)
+        self.table.attach(self.hbox0,1 ,2 ,1 ,2 , xoptions=False, yoptions=False)
+
+        self.btnApply = Gtk.Button(stock=Gtk.STOCK_APPLY)
+        self.btnApply.set_sensitive(False)
+        self.btnApply.connect("clicked", self.applyChanges)
         
         btnClear =  Gtk.Button(stock=Gtk.STOCK_CLEAR)
-
-        self.hbox.pack_start(self.__btnApply, True, True, 0)
-        self.hbox.pack_start(btnClear, True, True, 0)
-
-        self.vbox.pack_start(self.hbox, True, True, 0)
-        
-        # Connect all signals
-        self.__kbWidget.connect("keybinding-changed", self.on_keybinding_changed)
-        
-        self.__btnApply.connect("clicked", self.applyChanges)
         btnClear.connect("clicked", self.clearChanges)
-        #self.connect('delete-event', self.close)
-        #self.show_all()
+        
+        self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        self.hbox.set_halign(Gtk.Align.CENTER)
+        self.hbox.pack_start(self.btnApply, expand=False, fill=False, padding=0)
+        self.hbox.pack_start(btnClear, expand=False, fill=False, padding=0)
+
+        self.vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        self.vbox.pack_start(checkButton, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(self.table, expand=True, fill=True, padding=0) 
+        self.vbox.pack_start(self.hbox, expand=True, fill=True, padding=0)
+        
+        #self.vbox.set_size_request(500, 300)
+        self.vbox.set_halign(Gtk.Align.CENTER)
+        self.vbox.set_halign(Gtk.Align.FILL)
+        self.vbox.set_valign(Gtk.Align.FILL)
+        self.vbox.set_hexpand(True)
+        self.vbox.set_vexpand(True)
+        self.vbox.set_margin_left(50)
+        self.vbox.set_margin_top(50)
+        self.vbox.set_margin_right(50)
+        self.vbox.set_margin_bottom(50)
+        
+        self.vbox.show_all()
 
         return self.vbox
-        
-    def __closeFC(dialog,response_id,user_param1,rself):
-    	s = rself.__fcDialog.get_filename()
-    	if user_param1 == Gtk.RESPONSE_OK:
-    		configuration.setHxmlFile(s)
-    	return True
-    	
+
+    def onHxmlFileSelect(self,fileChooser):
+        fn = fileChooser.get_filename()
+        if fn != None:
+            configuration.setHxmlFile(fn)
+            self.hxmlfolderLabel.set_text(os.path.dirname(fn))
+            
     def on_check_button_toggled(self, button):
         change = (configuration.setDotComplete, button.get_active())
         self.changes.append(change)
-        self.__btnApply.set_sensitive(True)
-        #configuration.setDotComplete(button.get_active())
+        self.btnApply.set_sensitive(True)
         
     def __getKeybinding(self):
         return self.__keybinding
@@ -141,38 +130,28 @@ class ConfigurationDialog():#GObject.Object)#, Gedit.AppActivatable, PeasGtk.Con
         self.__keybinding = keybinding
         
     def on_keybinding_changed(self, widget, keybinding):
-        log.info("on_keybinding_changed")
-        log.info("New keybinding is %s" % str(keybinding))
         change1 = (configuration.setKeybindingComplete, keybinding)
         change2 = (self.__setKeybinding, keybinding)
         self.changes.append(change1)
         self.changes.append(change2)
         
-        self.__btnApply.set_sensitive(True)
+        self.btnApply.set_sensitive(True)
         
     def clearChanges(self, widget):
-        log.info("clearChanges")
         self.changes = []
-        self.__kbWidget.setKeybinding(self.__getKeybinding())
-        self.__btnApply.set_sensitive(False)
+        self.keybindingInput.setKeybinding(self.__getKeybinding())
+        self.btnApply.set_sensitive(False)
     
     def applyChanges(self, widget):
-        log.info("applyChanges")
-        # Commit changes (function pointer, data)
         for change in self.changes:
             change[0](change[1])
         
-        self.__btnApply.set_sensitive(False)
+        self.btnApply.set_sensitive(False)
         
     def close(self, widget, *event):
-        log.info("close")
         self.hide()
         self.destroy()
         
 if __name__ == '__main__':
-    logging.basicConfig()
-    log.setLevel(logging.DEBUG)
-    
     dlg = ConfigurationDialog()
-
     Gtk.main()
