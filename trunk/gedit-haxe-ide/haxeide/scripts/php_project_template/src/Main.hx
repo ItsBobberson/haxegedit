@@ -1,4 +1,4 @@
-package com.example;
+package;
 import php.FileSystem;
 import php.Lib;
 import php.Sys;

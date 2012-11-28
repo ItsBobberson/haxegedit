@@ -16,41 +16,29 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
     def setup(self):
         vbox = self.geditWindow.get_children()[0]
         self.geditToolbar = vbox.get_children()[1]
+        
         self.separator1 = Gtk.SeparatorToolItem()
         
-        self.projectsButton = Gtk.MenuToolButton()
-        self.menu = Gtk.Menu()
-        item = Gtk.MenuItem("save session")
-        item.connect("activate", self.saveSession)
-        
-        self.menu.add(item)
-        self.menu.add(Gtk.SeparatorMenuItem())
-        
-        self.sessionsHash = Configuration.getSessions()
-        for key in self.sessionsHash:
-            projectDirName = os.path.basename(os.path.dirname(key))
-            item = Gtk.MenuItem(projectDirName)
-            item.connect("activate", self.onProjectsChange, key)
-            self.menu.add(item)
-        self.menu.show_all()
-        self.projectsButton.set_menu(self.menu)
-        
+        self.sessionsButton = Gtk.MenuToolButton()
+
         self.haxeButton = Gtk.ToolButton(icon_widget=Gtk.Image.new_from_file(self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png"))
         self.haxeButton.connect("clicked", self.onHaxeButtonClick)
+        
+        self.hxmlButton = Gtk.ToolButton(stock_id=Gtk.STOCK_PROPERTIES)
+        self.hxmlButton.connect("clicked", self.onHxmlButtonClick)
+        
+        self.playButton = Gtk.ToolButton(stock_id=Gtk.STOCK_MEDIA_PLAY)
+        self.playButton.connect("clicked", self.onPlayButtonClick)
         
         self.buildButton = Gtk.ToolButton(stock_id=Gtk.STOCK_EXECUTE) #Gtk.STOCK_MEDIA_PLAY
         self.buildButton.set_is_important(True)
         self.buildButton.connect("clicked", self.onBuildButtonClick)
         
-        self.hxmlButton = Gtk.ToolButton(stock_id=Gtk.STOCK_PROPERTIES)
-        self.hxmlButton.connect("clicked", self.onHxmlButtonClick)
-        
-        self.resetButtons()
-        
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.separator1)
-        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.projectsButton)
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.sessionsButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.haxeButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.hxmlButton)
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.playButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.buildButton)
         self.geditToolbar.show_all()
 
@@ -60,26 +48,48 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.h3 = self.geditWindow.connect("tab-removed", self.onTabRemoved)
 
         Configuration.settings().connect("changed::hxml-uri", self.setHxml)
+        Configuration.settings().connect("changed::sessions", self.getSessions)
+        Configuration.settings().connect("changed::session-path-offset", self.getSessions)
+        
+        self.resetButtons()
+        self.getSessions(None, None)
         self.onActiveTabStateChange(self.geditWindow)
-    
+        
+    def getSessions(self, settings, skey):
+        item = Gtk.MenuItem("save session")
+        item.connect("activate", self.saveSession)
+        self.menu = Gtk.Menu()
+        self.menu.add(item)
+        self.menu.add(Gtk.SeparatorMenuItem())
+        self.sessionsHash = Configuration.getSessions()
+        for key in self.sessionsHash:
+            item = Gtk.MenuItem(os.path.basename(os.path.dirname(key)))
+            item.connect("activate", self.onProjectsChange, key)
+            self.menu.add(item)
+        self.menu.show_all()
+        self.sessionsButton.set_menu(self.menu)
+        
     def resetButtons(self):
         self.haxeButton.set_tooltip_text('Open haXe panel')
-        self.projectsButton.set_sensitive(True)
+        self.haxeButton.set_sensitive(True)
         
-        self.projectsButton.set_tooltip_text('Open session')
-        self.projectsButton.set_sensitive(True)
+        self.sessionsButton.set_tooltip_text('Open session')
+        self.sessionsButton.set_sensitive(True)
         
-        self.buildButton.set_tooltip_text('Build project')
-        self.buildButton.set_is_important(True)
-        self.buildButton.set_label("no hxml")
-        self.buildButton.set_sensitive(False)
-
         self.hxmlButton.set_tooltip_text('Select active document as hxml')
         self.hxmlButton.set_sensitive(False)
         
+        self.hxmlButton.set_tooltip_text('Run output')
+        self.hxmlButton.set_sensitive(False)
+        
+        self.buildButton.set_tooltip_text('Build project')
+        self.buildButton.set_is_important(True)
+        self.buildButton.set_label("")
+        self.buildButton.set_sensitive(False)
+
     def remove(self):
         self.geditToolbar.remove(self.separator1)
-        self.geditToolbar.remove(self.projectsButton)
+        self.geditToolbar.remove(self.sessionsButton)
         self.geditToolbar.remove(self.buildButton)
         self.geditToolbar.remove(self.hxmlButton)
         self.geditToolbar.remove(self.haxeButton)
@@ -125,6 +135,9 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         
     def onHxmlButtonClick(self, button):
         self.plugin.setActiveDocAsHxml()
+        
+    def onPlayButtonClick(self, button):
+        self.plugin.runApplication(Configuration.getHxml())
  
     def setHxml(self, settings, key):
         hxml = Configuration.getHxml()
@@ -133,7 +146,10 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
             return
         parts = hxml.split("/")
         l = len(parts)
-        label = parts[l-2] + "/" + parts[l-1]
+        label = parts[l-2]
+        #if Configuration.getBuildPathShowHxml():
+        if Configuration.getToolBarShowHxml():
+             label = label + "/" + parts[l-1]
         
         self.buildButton.set_label(label)
         self.buildButton.set_sensitive(True)

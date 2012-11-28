@@ -1,4 +1,4 @@
-package com.example;
+package;
 import neko.FileSystem;
 import neko.Lib;
 import neko.Sys;

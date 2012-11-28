@@ -70,16 +70,55 @@
       <summary>Hide the side panel for none haxe projects</summary>
       <description>Hide the side panel for none haxe projects</description>
     </key>
-    
-    <key type="s" name="projects-location">
+    <key type="s" name="project-default-location">
       <default>'None'</default>
       <summary>Path to default location for new haxe projects</summary>
       <description>Path to default location for new haxe projects</description>
+    </key>
+    <key type="s" name="project-default-package">
+      <default>'None'</default>
+      <summary>Default package to use when creating a new project.</summary>
+      <description>Default package to use when creating a new project.</description>
+    </key>
+    <key type="s" name="project-default-main">
+      <default>'None'</default>
+      <summary>Default document class to use when creating a new project.</summary>
+      <description>Default document class to use when creating a new project.</description>
     </key>
     <key type="s" name="sessions">
       <default>'None'</default>
       <summary>Paths to documents saved for a session</summary>
       <description>Paths to documents saved for a session</description>
+    </key>
+    <key type="i" name="session-path-offset">
+      <default>0</default>
+      <summary>Session path offset for label</summary>
+      <description>Shows more or less of the path to the hxml file</description>
+    </key>
+    <key type="b" name="session-path-show-hxml">
+      <default>true</default>
+      <summary>Show hxml file in session path</summary>
+      <description>Shows the hxml file in the path to a session</description>
+    </key>
+    <key type="b" name="play-after-build">
+      <default>true</default>
+      <summary>Execute the run.sh file after building</summary>
+      <description>Execute the run.sh file after building</description>
+    </key>
+    <key type="s" name="run-file">
+      <default>'None'</default>
+      <summary>File to run after compiling</summary>
+      <description>File to run after compiling</description>
+    </key>
+    <key type="b" name="build-path-show-hxml">
+      <default>true</default>
+      <summary>Show hxml file in build path</summary>
+      <description>Shows the hxml file in the build path</description>
+    </key>
+    <key type="b" name="toolbar-show-hxml">
+      <default>true</default>
+      <summary>Show current hxml file in the toolbar</summary>
+      <description>Show current hxml file in the toolbar</description>
     </key>
     
   </schema>

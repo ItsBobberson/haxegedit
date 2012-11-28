@@ -4,16 +4,13 @@
   <object class="GtkBox" id="vbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="halign">start</property>
-    <property name="valign">start</property>
+    <property name="margin_bottom">10</property>
     <property name="orientation">vertical</property>
     <property name="spacing">10</property>
-    <property name="homogeneous">True</property>
     <child>
-      <object class="GtkHBox" id="hbox1">
+      <object class="GtkHBox" id="titleBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_bottom">16</property>
         <property name="spacing">10</property>
         <child>
           <object class="GtkImage" id="image1">
@@ -50,19 +47,17 @@
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="buildKeybindingBox">
+      <object class="GtkBox" id="codeCompletionBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel" id="buildKeybindingLabel">
+          <object class="GtkLabel" id="codeCompletionTitle">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Key combination to call the haxe compiler. Only active when an hxml file has been set.</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Key combination for building</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;b&gt;Code completion&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -71,18 +66,22 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="buildKeybindingButtonBox">
+          <object class="GtkBox" id="completeKeybindingBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="halign">start</property>
+            <property name="valign">start</property>
+            <property name="margin_left">20</property>
             <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkEventBox" id="buildKeybindingPlaceholder">
+              <object class="GtkLabel" id="completeKeybindingLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Key combination to show a popup for code completion. Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Key combination to show a popup for code completion. Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Show poup with key combination</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -91,16 +90,60 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="buildKeybindingBtnApply">
-                <property name="label">gtk-apply</property>
+              <object class="GtkBox" id="completeKeybindingButtonBox">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">start</property>
-                <property name="use_action_appearance">False</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="applyKeybindingBuildChanges" swapped="no"/>
+                <property name="can_focus">False</property>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkEventBox" id="completeKeybindingPlaceholder">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="completeKeybindingBtnApply">
+                    <property name="label">gtk-apply</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="halign">start</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="use_stock">True</property>
+                    <signal name="clicked" handler="applyKeybindingCompleteChanges" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="completeKeybindingBtnClear">
+                    <property name="label">gtk-clear</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="halign">start</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="use_stock">True</property>
+                    <signal name="clicked" handler="clearKeybindingCompleteChanges" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -108,52 +151,408 @@
                 <property name="position">1</property>
               </packing>
             </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="useDotCompleteBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkButton" id="buildKeybindingBtnClear">
-                <property name="label">gtk-clear</property>
+              <object class="GtkLabel" id="useDotCompleteLabel">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
                 <property name="halign">start</property>
-                <property name="use_action_appearance">False</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="clearKeybindingBuildChanges" swapped="no"/>
+                <property name="label" translatable="yes">Show popup after typing a period</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="useDotCompleteCheckbutton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onUseDotCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">1</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="escHideBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="escHideLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Hide popup with &lt;ESC&gt;</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="escHideCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onEscHideCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="emptyHideBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="emptyHideLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Hide popup when the list is empty</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="emptyHideCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onEmptyHideCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="spaceCompleteBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="spaceCompleteLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Complete with &lt;SPACE&gt;</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="spaceCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onSpaceCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="tabCompleteBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="tabCompleteLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Complete with &lt;TAB&gt;</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="tabCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onTabCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="enterCompleteBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="enterCompleteLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Complete with &lt;ENTER&gt;</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="enterCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onEnterCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="nonAlphaCompleteBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="nonAlphaCompleteLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Complete with non alpha numeric</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="nonAlphaCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onNonAlphaCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="doubleDotComplete">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="doubleDotCompleteLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Complete with dot key and relaunch popup</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="doubleDotCompleteBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onDoubleDotCompleteToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">9</property>
           </packing>
         </child>
       </object>
       <packing>
         <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="position">1</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="completeKeybindingBox">
+      <object class="GtkBox" id="projectsBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel" id="completeKeybindingLabel">
+          <object class="GtkLabel" id="projectsTitle">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Key combination to show a popup for code completion. Only active when an hxml file has been set.</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Key combination for code completion</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;b&gt;Projects&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -162,17 +561,65 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="completeKeybindingButtonBox">
+          <object class="GtkBox" id="projectsHBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="halign">start</property>
+            <property name="margin_left">20</property>
             <property name="spacing">10</property>
             <child>
-              <object class="GtkEventBox" id="completeKeybindingPlaceholder">
+              <object class="GtkBox" id="projectsLabelsVBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">4</property>
+                <property name="homogeneous">True</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkLabel" id="projectsLocationLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_markup" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="tooltip_text" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">Default projects folder</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="projectsPackageLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_markup" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="tooltip_text" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">Default package</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="projectsMainLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_markup" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="tooltip_text" translatable="yes">Suggest this folder when creating a new project.</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">Default Document class</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
               <packing>
@@ -182,159 +629,141 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="completeKeybindingBtnApply">
-                <property name="label">gtk-apply</property>
+              <object class="GtkBox" id="projectsInputsVBox">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">start</property>
-                <property name="use_action_appearance">False</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="applyKeybindingCompleteChanges" swapped="no"/>
+                <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">4</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkBox" id="projectsLocationButtonBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkEntry" id="projectDefaultLocationInput">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFileChooserButton" id="filechooserbutton">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="action">select-folder</property>
+                        <property name="show_hidden">True</property>
+                        <property name="title" translatable="yes">Select a Folder</property>
+                        <signal name="selection-changed" handler="onFolderSelect" swapped="no"/>
+                        <signal name="file-set" handler="onFolderSelect" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="projectsPackageButtonBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkEntry" id="projectDefaultPackageInput">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="placeholder_text">com.example</property>
+                        <signal name="changed" handler="onProjectDefaultPackageInputChange" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="projectsMainButtonBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="spacing">10</property>
+                    <child>
+                      <object class="GtkEntry" id="projectDefaultMainInput">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="placeholder_text">Main</property>
+                        <signal name="changed" handler="onProjectDefaultMainInputChange" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
-            <child>
-              <object class="GtkButton" id="completeKeybindingBtnClear">
-                <property name="label">gtk-clear</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">start</property>
-                <property name="use_action_appearance">False</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="clearKeybindingCompleteChanges" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkBox" id="useDotCompleteBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
-        <child>
-          <object class="GtkLabel" id="useDotCompleteLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Show a popup window for code completion after typing a dot (.) Only active when an hxml file has been set.</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Use dot complete</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="useDotCompleteCheckbutton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="halign">start</property>
-            <property name="use_action_appearance">False</property>
-            <property name="xalign">0</property>
-            <property name="draw_indicator">True</property>
-            <signal name="toggled" handler="onUseDotCompleteToggle" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">True</property>
+        <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">3</property>
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="autoHideBottomPanelBox">
+      <object class="GtkBox" id="buildingBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkLabel" id="autoHideBottomPanelLabel">
+          <object class="GtkLabel" id="buildingLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Auto show error console</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="autoHideConsoleCheckbutton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
             <property name="halign">start</property>
-            <property name="use_action_appearance">False</property>
-            <property name="xalign">0</property>
-            <property name="draw_indicator">True</property>
-            <signal name="toggled" handler="onAutoHideConsoleToggle" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkBox" id="autoHideSidePanelBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
-        <child>
-          <object class="GtkLabel" id="autoHideSidePanelLabel">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Automatically open the side panel and set the root folder to the project location</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Auto show side panel</property>
+            <property name="label" translatable="yes">&lt;b&gt;Building&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -343,76 +772,83 @@
           </packing>
         </child>
         <child>
-          <object class="GtkCheckButton" id="autoHideSidePanelCheckbutton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="halign">start</property>
-            <property name="use_action_appearance">False</property>
-            <property name="xalign">0</property>
-            <property name="draw_indicator">True</property>
-            <signal name="toggled" handler="onAutoHideSidePanelToggle" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkBox" id="projectsLocationBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="valign">start</property>
-        <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
-        <child>
-          <object class="GtkLabel" id="projectsLocationLabel">
+          <object class="GtkBox" id="buildKeybindingBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Suggest this folder when creating a new project.</property>
-            <property name="halign">end</property>
-            <property name="label" translatable="yes">Default projects folder</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="projectsLocationButtonBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkEntry" id="projectsLocationInput">
+              <object class="GtkLabel" id="buildKeybindingLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="invisible_char">●</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Key combination to call the haxe compiler. Only active when an hxml file has been set.</property>
+                <property name="tooltip_text" translatable="yes">Key combination to call the haxe compiler. Only active when an hxml file has been set.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Key combination for building</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFileChooserButton" id="filechooserbutton">
+              <object class="GtkBox" id="buildKeybindingButtonBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="orientation">vertical</property>
-                <property name="action">select-folder</property>
-                <property name="title" translatable="yes">Select a Folder</property>
-                <signal name="selection-changed" handler="onFolderSelect" swapped="no"/>
-                <signal name="file-set" handler="onFolderSelect" swapped="no"/>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkEventBox" id="buildKeybindingPlaceholder">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="buildKeybindingBtnApply">
+                    <property name="label">gtk-apply</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="halign">start</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="use_stock">True</property>
+                    <signal name="clicked" handler="applyKeybindingBuildChanges" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="buildKeybindingBtnClear">
+                    <property name="label">gtk-clear</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="halign">start</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="use_stock">True</property>
+                    <signal name="clicked" handler="clearKeybindingBuildChanges" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -427,11 +863,270 @@
             <property name="position">1</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkBox" id="playAfterBuildBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="playAfterBuildLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="tooltip_text" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Run file after successful compilation</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="playAfterBuildCheckbutton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onPlayAfterBuildToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="runFileBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="runFileLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="tooltip_text" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Default file to run after compiling</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="runFileInput">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">●</property>
+                <property name="invisible_char_set">True</property>
+                <property name="placeholder_text">run.sh</property>
+                <signal name="changed" handler="onRunFileInputChange" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
       </object>
       <packing>
-        <property name="expand">True</property>
+        <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">6</property>
+        <property name="position">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox" id="variousBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel" id="variousTitle">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">&lt;b&gt;Toolbars and panels&lt;/b&gt;</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="autoHideBottomPanelBox1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="showToolBarHxmlLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="tooltip_text" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Show current hxml file in toolbar</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="showToolBarHxmlCheckbutton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onShowToolBarHxmlToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="autoHideBottomPanelBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="autoHideBottomPanelLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="tooltip_text" translatable="yes">Automatically hide the error console in the bottom panel when there are no compiler errors.</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Automatically hide error console</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="autoHideConsoleCheckbutton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onAutoHideConsoleToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="autoHideSidePanelBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">20</property>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkLabel" id="autoHideSidePanelLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Automatically open the side panel and set the root folder to the project location</property>
+                <property name="tooltip_text" translatable="yes">Automatically open the side panel and set the root folder to the project location</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Automatically show side panel</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="autoHideSidePanelCheckbutton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="onAutoHideSidePanelToggle" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">5</property>
       </packing>
     </child>
   </object>
