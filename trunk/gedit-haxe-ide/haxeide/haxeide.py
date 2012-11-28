@@ -187,12 +187,16 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 if Configuration.getAutoHideConsole():
                     bottom_panel.set_property("visible", False)
                 
-                command = ["bash","run.sh"]
+                #os.system('bash')
+                
+                command = [os.path.dirname(hxml)+"/run.sh"]
+                command = ["gnome-terminal", "--command=run.sh"]# --command="+os.path.dirname(hxml)+"/run.sh"]
                 proc = subprocess.Popen(command,cwd=os.path.dirname(hxml),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out = proc.communicate()
                 if proc.returncode != 0:
                     bottom_panel.set_property("visible", True)
-                    self.bottomPanel.setText(out[1])
+                    self.bottomPanel.appendText(out[0])
+                    self.bottomPanel.appendText(out[1])
                 
                 #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
 

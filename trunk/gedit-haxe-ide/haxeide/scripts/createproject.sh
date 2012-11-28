@@ -19,16 +19,18 @@ packagePath=${package//.//} #com/example
 		package=""
 		packagePath=""
 	fi
-	
-
-	mkdir -p $destinationFolder/$folderName/bin
+	#mkdir -p $destinationFolder/$folderName/bin
 	mkdir -p $destinationFolder/$folderName/src/$packagePath
 	
-	## Build.hxml aanpassingen (-main)
+	## copy bin folder
+	cp -r $target'_project_template/bin' $destinationFolder/$folderName
+	
+	## build.hxml (adjust-main) and run.sh
+	cp $target'_project_template/run.sh' $destinationFolder/$folderName/run.sh
 	cp $target'_project_template/build.hxml' $destinationFolder/$folderName/build.hxml
 	sed -i "s/-main Main/-main $main/" $destinationFolder/$folderName/build.hxml
 	
-	## Main.hx aanpassingen (package and class name)
+	## Main.hx (adjust package and class name)
 	cp $target'_project_template/src/Main.hx' $destinationFolder/$folderName/src/$mainPath.hx
 	sed -i "s/package;/package $package;/" $destinationFolder/$folderName/src/$mainPath.hx
 	sed -i "s/Main/$mainName/" $destinationFolder/$folderName/src/$mainPath.hx
