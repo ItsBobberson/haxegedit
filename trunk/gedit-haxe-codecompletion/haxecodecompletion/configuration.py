@@ -20,12 +20,9 @@ This code is alpha, it doesn't do very much input validation!
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-#import gconf
 from gi.repository import Gio
 
-#GCONF_PLUGIN_PATH = "/apps/gedit-2/plugins/haxecodecompletion/"
 CONSOLE_KEY_BASE = 'org.gnome.gedit.plugins.haxecodecompletion'
-#GCONF_KEYBINDING_COMPLETE = GCONF_PLUGIN_PATH + "keybindings/complete"
 GCONF_KEYBINDING_COMPLETE = 'keybinding-complete'
 GCONF_DOT_COMPLETE = 'dot-complete'
 
@@ -40,8 +37,6 @@ HXML_FILE = None
 
 HAXE_EXEC_PATH = "haxe"
 
-#__client = gconf.client_get_default ();
-#__client.add_dir("/apps/gedit-2", gconf.CLIENT_PRELOAD_NONE)#_client.add_dir(GCONF_PLUGIN_PATH, gconf.CLIENT_PRELOAD_NONE)
 __client = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
 
 # Cached keybinding
@@ -50,6 +45,41 @@ __keybindingCompleteTuple = {}
 
 __dotComplete = True
 
+def getEscHideComplete():
+    return __client.get_boolean("esc-hide-complete")
+def setEscHideComplete(v):
+    return __client.set_boolean("esc-hide-complete",v)
+
+def getEmptyHideComplete():
+    return __client.get_boolean("empty-hide-complete")
+def setEmptyHideComplete(v):
+    return __client.set_boolean("empty-hide-complete",v)
+    
+def getSpaceComplete():
+    return __client.get_boolean("space-complete")
+def setSpaceComplete(v):
+    return __client.set_boolean("space-complete",v)
+    
+def getTabComplete():
+    return __client.get_boolean("tab-complete")
+def setTabComplete(v):
+    return __client.set_boolean("tab-complete",v)
+    
+def getEnterComplete():
+    return __client.get_boolean("enter-complete")
+def setEnterComplete(v):
+    return __client.set_boolean("enter-complete",v)
+    
+def getDoubleDotComplete():
+    return __client.get_boolean("double-dot-complete")
+def setDoubleDotComplete(v):
+    return __client.set_boolean("double-dot-complete",v)
+    
+def getNonAlphaComplete():
+    return __client.get_boolean("non-alpha-complete")
+def setNonAlphaComplete(v):
+    return __client.set_boolean("non-alpha-complete",v)
+        
 def getDotComplete():
     """
     Returns a boolean (as flag to toggle dot completion) from configuration file, e.g. "True"

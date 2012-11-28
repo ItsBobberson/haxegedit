@@ -1,9 +1,10 @@
 from gi.repository import GObject, Gtk, Gdk, Gedit
+import configuration
+import re
 import string
 
-
 class CompletionWindow(Gtk.Window):
-
+    re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
     def init_frame(self):
         """Initialize the frame and scroller around the tree view."""
         self.set_size_request(400, 400)
@@ -120,7 +121,7 @@ class CompletionWindow(Gtk.Window):
         """ Respond to a keyboard event. """
         ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
         # Escape
-        if event.keyval == Gdk.KEY_Escape:
+        if event.keyval == Gdk.KEY_Escape and configuration.getEscHideComplete():
             self.destroy ()
         # Backspace
         elif event.keyval == Gdk.KEY_BackSpace:
@@ -132,22 +133,51 @@ class CompletionWindow(Gtk.Window):
                 else:
                     self.temp_clear ()
         # Tab
-        elif event.keyval in (Gdk.KEY_Return, Gdk.KEY_Tab):
-            self.complete()
+        elif event.keyval == Gdk.KEY_Tab:
+            if configuration.getTabComplete():
+                self.complete()
+            else:
+                self.insert('\t')
+                self.destroy()
+            
+        # Return
+        elif event.keyval == Gdk.KEY_Return:
+            if configuration.getEnterComplete():
+                self.complete()
+            else:
+                self.destroy()
+            
         # Space
         elif event.keyval == Gdk.KEY_space:
-            if self.complete ():
-                self.insert (" ")
+            if configuration.getSpaceComplete():
+                if self.complete():
+                    self.insert(" ")
+            else:
+                self.insert(" ")
+                self.destroy()
         # Dot
         # It completes the word, and launches the completion again for the next word.
         elif event.keyval == Gdk.KEY_period:
-            if self.complete ():
-                self.plugin.on_view_key_press_event (self.gedit_window.get_active_view (), event)
-                self.gedit_window.get_active_document ().insert_at_cursor (event.string)
+            if configuration.getDoubleDotComplete():
+                if self.complete ():
+                    self.plugin.on_view_key_press_event (self.gedit_window.get_active_view (), event)
+                    self.gedit_window.get_active_document ().insert_at_cursor (event.string)
+            else:
+                self.insert(".")
+                self.destroy()
+                
         # everything else !
         else:
             if len(event.string) > 0:
-                self.temp_add (event.string)
+                if not self.re_alpha.match(unicode(event.string)): 
+                    if configuration.getNonAlphaComplete():
+                        self.complete()
+                        self.insert(event.string)
+                        self.destroy()
+                    else:
+                        self.temp_add (event.string)
+                else:
+                    self.temp_add (event.string)
 
 
     def complete(self, hide=True):
@@ -214,7 +244,8 @@ class CompletionWindow(Gtk.Window):
             self.view.get_selection().select_path(0)
         else:
             #print "len (self.current_completions) %s" % len (self.current_completions)
-            self.destroy ()
+            if configuration.getEmptyHideComplete():
+                self.destroy ()
 
     def set_font_description(self, font_desc):
         """Set the label's font description."""

@@ -66,11 +66,6 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         handler_id = view.connect("key-press-event", callback)
         handler_ids.append(handler_id)
         view.set_data(self.name, handler_ids)
-
-    #def create_configure_dialog(self):
-        #"""Creates and displays a ConfigurationDialog."""
-        #dlg = configurationdialog.ConfigurationDialog()
-        #return dlg
         
     def do_create_configure_widget(self):
         return  ConfigurationDialog().create_widget()
@@ -87,11 +82,10 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
                     widget.disconnect(handler_id)
                 widget.set_data(self.name, None)
         self.window = None
-        #cleanup ()
 
     def do_update_state(self):
-        pass
         #print "Window %s state updated." % self.window
+        pass
 
     def display_completions(self, view, event):
         """Find completions and display them."""
@@ -130,7 +124,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         if incomplete.isdigit ():
             return self.cancel ()
 
-        if event.keyval == Gdk.KEY_period and configuration.getDotComplete():
+        if event.keyval == Gdk.KEY_period: 
             # If we complete with the dot key, gedit won't have inserted it prior to calling
             # this function, which is why we add the dot manually
             offset = insert.get_offset ()
@@ -149,7 +143,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         # Nothing in the completion list, so no need to do anything
         if not completes:
             return self.cancel()
-
+        print incomplete
         self.show_popup (view, completes, incomplete)
 
     def is_configurable(self):
@@ -189,7 +183,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         keyval = Gdk.keyval_from_name(keybinding[configuration.KEY])
         key_ok = (event.keyval == keyval)
         
-        if event.keyval == Gdk.KEY_period:
+        if event.keyval == Gdk.KEY_period and configuration.getDotComplete():
             return self.display_completions(view, event)
         elif ctrl_ok and alt_ok and shift_ok and key_ok:
             return self.display_completions(view, event)

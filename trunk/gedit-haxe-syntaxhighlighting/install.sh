@@ -11,7 +11,7 @@ USER_MIME_PACKAGES_FOLDER="$HOME/.local/share/mime/packages"
 LANGSPEC_FILE="haxe.lang"
 MIME_FILE="haxe.xml"
 
-echo "\n*** Installing haXe syntax file for highlighting ***\n"
+echo "*** Installing haXe syntax file for highlighting ***"
 
 #create directories for the plugin files
 if [ `whoami` != 'root' ]; then
@@ -30,12 +30,12 @@ fi
 if [ `whoami` = 'root' ]; then
 
 	if [ ! -f "$ROOT_MIME_PACKAGES_FOLDER/$MIME_FILE" ]; then
-		echo "Adding $MIME_FILE to $ROOT_MIME_PACKAGES_FOLDER"
+		echo "Adding $MIME_FILE, to: $ROOT_MIME_PACKAGES_FOLDER"
 		cp "$MIME_FILE" "$ROOT_MIME_PACKAGES_FOLDER/$MIME_FILE"
 	fi
 	
 	if [ ! -f "$ROOT_LANGSPEC_FOLDER/$LANGSPEC_FILE" ]; then
-		echo "Adding $LANGSPEC_FILE to $ROOT_LANGSPEC_FOLDER"
+		echo "Adding $LANGSPEC_FILE, to: $ROOT_LANGSPEC_FOLDER"
 		cp "$LANGSPEC_FILE" "$ROOT_LANGSPEC_FOLDER/$LANGSPEC_FILE"
 	fi
 	echo "updating mime-database"
@@ -44,12 +44,12 @@ if [ `whoami` = 'root' ]; then
 else
 
 	if [ ! -f "$USER_MIME_PACKAGES_FOLDER/$MIME_FILE" ]; then
-		echo "Adding $MIME_FILE to $USER_MIME_PACKAGES_FOLDER"
+		echo "Adding $MIME_FILE, to: $USER_MIME_PACKAGES_FOLDER"
 		cp "$MIME_FILE" "$USER_MIME_PACKAGES_FOLDER/$MIME_FILE"
 	fi
 	
 	if [ ! -f "$USER_LANGSPEC_FOLDER/$LANGSPEC_FILE" ]; then
-		echo "Adding $LANGSPEC_FILE to $USER_LANGSPEC_FOLDER"
+		echo "Adding $LANGSPEC_FILE, to: $USER_LANGSPEC_FOLDER"
 		cp "$LANGSPEC_FILE" "$USER_LANGSPEC_FOLDER/$LANGSPEC_FILE"
 	fi
 	echo "updating mime-database"
@@ -57,4 +57,4 @@ else
 
 fi
 
-echo "\nDone installing.\n"
+echo "Done installing.\n"
