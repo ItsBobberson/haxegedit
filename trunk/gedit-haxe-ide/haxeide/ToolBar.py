@@ -18,7 +18,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
 
         self.separator1 = Gtk.SeparatorToolItem()
         
-        self.sessionButton = Gtk.ToolButton(stock_id=Gtk.STOCK_MEDIA_RECORD)
+        self.sessionButton = Gtk.ToolButton(stock_id=Gtk.STOCK_ADD)
         #self.sessionButton.set_tooltip_text('Save session')
         self.sessionButton.connect("clicked", self.saveSession)
         #self.sessionButton.set_sensitive(False)
@@ -34,19 +34,23 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.buildButton.connect("clicked", self.onBuildButtonClick)
         #self.buildButton.set_sensitive(False)
         
-        self.hxmlButton = Gtk.ToolButton(stock_id=Gtk.STOCK_YES)
+        self.hxmlButton = Gtk.ToolButton(stock_id=Gtk.STOCK_PROPERTIES)
         #self.hxmlButton.set_stock_id(Gtk.STOCK_NO)
         #self.hxmlButton.set_tooltip_text('Select active document as hxml')
         self.hxmlButton.connect("clicked", self.onHxmlButtonClick)
         #self.hxmlButton.set_sensitive(False)
         
+        self.debugButton = Gtk.ToolButton(stock_id=Gtk.STOCK_GOTO_LAST)
+        self.debugButton.connect("clicked", self.onDebugButtonClick)
+        
         self.resetButtons()
-
+        
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.separator1)
-        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.haxeButton )
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.debugButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.sessionButton)
-        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.hxmlButton )
-        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.buildButton )
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.haxeButton)
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.hxmlButton)
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.buildButton)
         
         self.geditToolbar.show_all()
         
@@ -66,12 +70,13 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.buildButton.set_label("no hxml")
         self.buildButton.set_sensitive(False)
         
-        self.hxmlButton.set_stock_id(Gtk.STOCK_NO)
+        #self.hxmlButton.set_stock_id(Gtk.STOCK_NO)
         self.hxmlButton.set_tooltip_text('Select active document as hxml')
         self.hxmlButton.set_sensitive(False)
         
     def remove(self):
         self.geditToolbar.remove(self.separator1)
+        self.geditToolbar.remove(self.debugButton)
         self.geditToolbar.remove(self.sessionButton)
         self.geditToolbar.remove(self.buildButton)
         self.geditToolbar.remove(self.hxmlButton)
@@ -115,6 +120,9 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
     def onHxmlButtonClick(self, button):
         self.plugin.setActiveDocAsHxml()
         
+    def onDebugButtonClick(self, button):
+        self.plugin.debug()
+        
     def setHxml(self, hxml):
         if hxml=="" or hxml == None:
             self.resetButtons()
@@ -126,11 +134,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         
         self.buildButton.set_label(label)
         self.buildButton.set_sensitive(True)
-        
         self.hxmlButton.set_tooltip_text(hxml)
-        self.hxmlButton.set_stock_id(Gtk.STOCK_YES)
-        
-        #self.sessionButton.set_tooltip_text(label)
         self.sessionButton.set_sensitive(True)
         
         

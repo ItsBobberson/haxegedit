@@ -1,15 +1,36 @@
-#!/bin/sh
+#!/bin/bash
+#
+# createProject.sh
+# command = ["./createproject.sh", target, destinationFolder, folderName, main]
 
-#install a folder
-copy_folder() 
-{
-	echo "Adding folder $1 to $2"
-	cp -r "$1" "$2" || exit 1
-	mv $2/$1 $2/$3  || exit 1
-}
+target=$1 #flash, neko, js, cpp, 
+destinationFolder=$2 #/home/user/documents/projects
+folderName=$3 #test
+main=$4 # com.example.Main
 
-if [ `whoami` = 'root' ]; then
-	copy_folder $1'_project_template' $2 $3
-else
-	copy_folder $1'_project_template' $2 $3
-fi
+mainPath=${main//.//} # com/example/Main
+mainName=${main##*.} # Main
+
+package=${main%.*} #com.example
+packagePath=${package//.//} #com/example
+
+	if [[ $package = $main ]]
+		then 
+		package=""
+		packagePath=""
+	fi
+	
+
+	mkdir -p $destinationFolder/$folderName/bin
+	mkdir -p $destinationFolder/$folderName/src/$packagePath
+	
+	## Build.hxml aanpassingen (-main)
+	cp $target'_project_template/build.hxml' $destinationFolder/$folderName/build.hxml
+	sed -i "s/-main Main/-main $main/" $destinationFolder/$folderName/build.hxml
+	
+	## Main.hx aanpassingen (package and class name)
+	cp $target'_project_template/src/Main.hx' $destinationFolder/$folderName/src/$mainPath.hx
+	sed -i "s/package;/package $package;/" $destinationFolder/$folderName/src/$mainPath.hx
+	sed -i "s/Main/$mainName/" $destinationFolder/$folderName/src/$mainPath.hx
+	
+	
