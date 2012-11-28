@@ -25,6 +25,7 @@ from gi.repository import Gio
 CONSOLE_KEY_BASE = 'org.gnome.gedit.plugins.haxecodecompletion'
 GCONF_KEYBINDING_COMPLETE = 'keybinding-complete'
 GCONF_DOT_COMPLETE = 'dot-complete'
+GCONF_HXML_PATH = "hxml-uri"
 
 DEFAULT_KEYBINDING_COMPLETE = "ctrl+space"
 DEFAULT_DOT_COMPLETE = True
@@ -175,11 +176,13 @@ def setKeybindingComplete(keybinding):
 
 def getHxmlFile():
 	global HXML_FILE
-	return HXML_FILE
+	#return HXML_FILE
+	return __client.get_string(GCONF_HXML_PATH)
 	
 def setHxmlFile(newFile):
 	global HXML_FILE
 	HXML_FILE = newFile
+	__client.set_string(GCONF_HXML_PATH, newFile)
       
 if __name__ == "__main__":
     __client.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)

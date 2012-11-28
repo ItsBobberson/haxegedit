@@ -39,8 +39,8 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     file.write (origdoc)
     file.close ()
     errorInfoPath=""
-
-    if hxmlfile != None:
+    
+    if hxmlfile != None and hxmlfile != "":
     	cls = classname
         if package != None:
             cls = package+"."+cls
@@ -107,7 +107,7 @@ def haxe_complete (fileloc, origdoc, offset):
     classname = filename[:-3]
     
     hxmlfile = configuration.getHxmlFile()
-    if hxmlfile != None:
+    if hxmlfile != None and hxmlfile != "":
     	dirname = os.path.dirname(hxmlfile)
 
     basedir = dirname # by default
