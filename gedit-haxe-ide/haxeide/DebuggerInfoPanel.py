@@ -9,7 +9,6 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
     
     def __init__(self, plugin):
         GObject.Object.__init__(self)
-        #self.plugin = plugin
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
         self.debugger = plugin.debuggerPanel
@@ -60,13 +59,13 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 parts = line.split(" at ")
                 ls.append([parts[-1], line])
         stackTreeView.set_model(ls)
-        if jumpTo:
+        if jumpTo and len(ls)!=0:
             info = self.parseStackLineInfo(ls[0][1])
-            self.jumpToStackBackTraceLine(info)
+            self.jumpToSourceLine(info)
         
     def onStackSelectionChange (self, selection, tree):
         model, rows = selection.get_selected_rows()
@@ -74,13 +73,11 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
             return
         iter = model.get_iter(rows[0])
         info = self.parseStackLineInfo(model[iter][1])
-        self.jumpToStackBackTraceLine(info)
+        self.jumpToSourceLine(info)
     
-    def jumpToStackBackTraceLine(self, info):
+    def jumpToSourceLine(self, info):
         path = info["file"]
         lineNr = int(info["lineNr"])
-        #print path
-        #print lineNr
         if info["file"]=="":
             return
         gio_file = Gio.file_new_for_path(path)
@@ -99,54 +96,44 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         #line = " #0   this = [Object 3039793441, class='be.haxer::Main'].Main() at Main.hx:9"
         #line = "1  0x0808b2e1 in main (argc=1, argv=0xbffff704) at ./src/__main__.cpp:12"
         parts0 = line.split(" at ")
-
-        fileNameLineNr = parts0[-1] #Main.hx:9 or ./src/__main__.cpp
+        fileNameLineNr = parts0[-1] #Main.hx:9 or ./src/__main__.cpp:12
         parts1 = fileNameLineNr.split(":")
-        fileName = parts1[0]
-        lineNr = parts1[-1]
-        if not (fileName.endswith(".cpp") or fileName.endswith(".hx")):
-            return {"file":"", "lineNr":1}
-            
-        if fileName.endswith(".cpp"):
-            hxml = Configuration.getHxml()
-            hxmlDir = os.path.dirname(hxml)
-            p = os.path.normpath(hxmlDir + "/bin/" +fileName)
-            targetFile = ""
-            if os.path.isfile(p):
-                targetFile = p
-            return {"file":targetFile, "lineNr":lineNr}
-
-        classInfo0 = parts0[0] # #0   this = [Object 3039793441, class='be.haxer::Main'].Main()
-        parts2 = classInfo0.split("'].")
+        fileName = parts1[0] #./src/__main__.cpp
+        lineNr = parts1[-1] # 12
         
-        classInfo1 = parts2[0] # #0   this = [Object 3039793441, class='be.haxer::Main
+        if fileName.startswith("/"):
+            return {"file":os.path.normpath(fileName), "lineNr":lineNr}
         
-        parts3 = classInfo1.split(", class='")
-        
-        classInfo2 = parts3[1] # be.haxer::Main
-        
-        parts4 = classInfo2.split("::")
-        
-        packagePath = ""
-        if len(parts4) != 1:
-            package = parts4[0]  # be.haxer
-            packagePath = "/".join(package.split("."))
-            cls = parts4[-1] # Main
-   
-        if packagePath == "":
-            path = fileName
-        else:
-            path = packagePath + "/" + fileName
-
-        searchLocations = []
-        apiDir = "/home/jan/Programs/Motion-Twin/haxe/std/flash9"
-        libDir = "/home/jan/Programs/Motion-Twin/haxe/lib"
-        stdDir = "/home/jan/Programs/Motion-Twin/haxe/std"
-        
+        stdDir = "".join(os.environ['HAXE_LIBRARY_PATH'].split(":.")) # "/home/jan/Programs/Motion-Twin/haxe/std"
+        libDir = os.environ['HAXEPATH'] + "/lib" #"/home/jan/Programs/Motion-Twin/haxe/lib"
         hxml = Configuration.getHxml()
         hxmlDir = os.path.dirname(hxml)
-        
-        searchLocations = [hxmlDir, stdDir, apiDir]
+        searchLocations = [hxmlDir]    
+        if fileName.endswith(".hx"):
+            searchLocations.append(stdDir + "/flash9")
+            classInfo0 = parts0[0] # #0   this = [Object 3039793441, class='be.haxer::Main'].Main()
+            parts2 = classInfo0.split("'].")
+            classInfo1 = parts2[0] # #0   this = [Object 3039793441, class='be.haxer::Main
+            parts3 = classInfo1.split(", class='")
+            classInfo2 = parts3[1] # be.haxer::Main
+            parts4 = classInfo2.split("::")
+            packagePath = ""
+            if len(parts4) != 1:
+                package = parts4[0]  # be.haxer
+                packagePath = "/".join(package.split("."))
+                cls = parts4[-1] # Main
+            if packagePath == "":
+                path = fileName
+            else:
+                path = packagePath + "/" + fileName
+        elif fileName.endswith(".cpp") or fileName.endswith(".h"):
+            searchLocations.append(stdDir + "/cpp")
+            searchLocations.append(hxmlDir + "/bin")
+            searchLocations.append(libDir + "/hxcpp")
+            path = fileName
+        else:
+            return {"file":"", "lineNr":-1}
+            
         f = open(hxml)
         lines = f.readlines()
         f.close()
@@ -159,14 +146,41 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
                libPath = libDir+"/"+line[5:-1]+"/"+ ",".join(version.split("."))
                searchLocations.append(libPath)
 
-        targetFile = ""       
+        targetFile = ""
+        
         for loc in searchLocations:
-            p = loc + "/" + path
-            if os.path.isfile(p):
-                targetFile = p
-                break
+            file = os.path.normpath(loc + "/" + path)
+            if file.endswith(".cpp") or file.endswith(".h"):
+                if os.path.isfile(file):
+                    targetFile = file
+                    info = self.findHxCounterPart(searchLocations,targetFile,lineNr)
+                    if info["file"] != "":
+                        targetFile = info["file"]
+                        lineNr = info["lineNr"]
+                    break
+            elif path.endswith(".hx"):
+                if os.path.isfile(file):
+                    targetFile = file
+                    break
         
         return {"file":targetFile, "lineNr":lineNr}
+        
+    def findHxCounterPart(self, searchLocations, targetFile, lineNr):
+        info = {"file":"", "lineNr":-1}
+        f = open(targetFile)
+        lines = f.readlines()
+        f.close()
+        hxSourcePos = lines[int(lineNr)-2]
+        if hxSourcePos.find('HX_SOURCE_POS("') != -1:
+            hxpathFileNr = hxSourcePos.split('HX_SOURCE_POS("')[-1].split('",') #[ src/Main.hx, 29) ]
+            hxpath = hxpathFileNr[0]
+            for loc in searchLocations:
+                file = os.path.normpath(loc + "/" + hxpath)
+                if os.path.isfile(file):
+                    info["file"] = file
+                    info["lineNr"] = int("".join(hxpathFileNr[1].split(')')))
+                    break
+        return info
         
     def setFiles(self):
         filesTreeView = self.builder.get_object("filesTreeView")
@@ -179,7 +193,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 ls.append([line])       
         filesTreeView.set_model(ls)
         
@@ -197,7 +211,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 parts = line.split(" = ")
                 if len(parts)==2:
                     ls.append([parts[0], parts[1]])      
@@ -217,7 +231,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 parts = line.split(" = ")
                 if len(parts)==2:
                     ls.append([parts[0], parts[1]])      
@@ -233,11 +247,13 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
             col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
             col.set_resizable(True)
             argsTreeView.append_column(col)
-        result = self.debugger.sendDebugInfoCommand("info arguments")
+
+        cmd = self.debugger.debugType == 'fdb' if "info arguments" else "info args"
+        result = self.debugger.sendDebugInfoCommand("info args")
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 parts = line.split(" = ")
                 if len(parts)==2:
                     ls.append([parts[0], parts[1]])      
@@ -255,7 +271,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str)
         for line in lines:
-            if line != '(fdb)' and not line.startswith("  "):
+            if line != '(gdb)' and line != '(fdb)' and not line.startswith("  "):
                 ls.append([line])
         breakPointsTreeView.set_model(ls)
         
@@ -274,7 +290,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)':
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
                 parts = line.split(" = ")
                 if len(parts)==3:
                     self.builder.get_object("thisLabel").set_markup("<b>" + "["+ parts[-1].split(", ")[-1] + "</b>")
