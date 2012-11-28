@@ -26,6 +26,7 @@ class SettingsFrame(Gtk.Frame):
         self.builder.get_object("useDotCompleteCheckbutton").set_active(Configuration.getDotComplete())
         self.builder.get_object("escHideCompleteBtn").set_active(Configuration.getEscHideComplete())
         self.builder.get_object("emptyHideCompleteBtn").set_active(Configuration.getEmptyHideComplete())
+        self.builder.get_object("typeOnlyHideCompleteBtn").set_active(Configuration.getTypeOnlyHideComplete())
         self.builder.get_object("spaceCompleteBtn").set_active(Configuration.getSpaceComplete())
         self.builder.get_object("tabCompleteBtn").set_active(Configuration.getTabComplete())
         self.builder.get_object("enterCompleteBtn").set_active(Configuration.getEnterComplete())
@@ -109,6 +110,9 @@ class SettingsFrame(Gtk.Frame):
             
     def onEscHideCompleteToggle(self, button):
         Configuration.setEscHideComplete(button.get_active())
+        
+    def onTypeOnlyHideCompleteToggle(self, button):
+        Configuration.setTypeOnlyHideComplete(button.get_active())
     
     def onEmptyHideCompleteToggle(self, button):
         Configuration.setEmptyHideComplete(button.get_active())

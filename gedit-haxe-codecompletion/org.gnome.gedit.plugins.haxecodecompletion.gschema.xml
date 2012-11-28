@@ -49,11 +49,15 @@
       <description>Close the popup with the esc key</description>
     </key>
     <key type="b" name="empty-hide-complete">
-      <default>true</default>
+      <default>false</default>
       <summary>Close the popup when empty after filter</summary>
       <description>Close the popup when empty after filter</description>
     </key>
-    
+    <key type="b" name="typeonly-hide-complete">
+      <default>false</default>
+      <summary>Show popup with list of types in case of Dynamic, Unknown</summary>
+      <description>Show popup with list of types in case of Dynamic, Unknown</description>
+    </key>
     <!-- #### configuration for haxe ide plugin #### -->
     <key type="s" name="keybinding-build">
       <default>'shift+space'</default>
