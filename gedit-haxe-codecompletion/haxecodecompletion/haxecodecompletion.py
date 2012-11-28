@@ -36,6 +36,8 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
     window = GObject.property(type=Gedit.Window)
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
     re_non_alpha = re.compile(r"\W+", re.UNICODE | re.MULTILINE)
+    re_multiline_comments = re.compile(r"/\*(?:.|[\r\n])*?\*/", re.UNICODE | re.MULTILINE)
+    re_singleline_comments = re.compile(r"//+[^\n]*\n", re.UNICODE | re.MULTILINE)
 
     def __init__(self):
         GObject.Object.__init__(self)
@@ -158,7 +160,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         # We first get the line we're in and verify we're not in a line comment
         linestart = insert.copy ()
         linestart.set_offset (insert.get_offset () - insert.get_line_offset ())
-        current_line = unicode (doc.get_text (linestart, insert, include_hidden_chars=True))
+        current_line = unicode (doc.get_text (linestart, insert, include_hidden_chars=True), 'utf-8')
         comment_index = current_line.find ('//')       
         if comment_index != -1 and insert.get_line_offset () > comment_index:
             return self.cancel ()
@@ -169,15 +171,53 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         opening_multi_comment_index = text.rfind ('/*', 0, insert.get_offset ())
         if opening_multi_comment_index > closing_multi_comment_index:
             return self.cancel ()
- 
+            
+        # Check if cursor is inside of a string (between two "s or 's)
+        # If so, cancel the completion
+        # TODO improve re_singleline_comments regex so it doesn't match comments inside a string
+
+        #self.t = time.time()
+        #print "inside-of-string check started"
+        text_copy_1 = text[:insert.get_offset ()]
+        text_copy_1 = text_copy_1.replace("\\\"","").replace ("\\\'","");
+        text_copy_1 = re.sub (self.re_multiline_comments,"",text_copy_1); #ignore multi-line comments
+        text_copy_1 = re.sub (self.re_singleline_comments,"",text_copy_1); #ignore single-line comments 
+
+        quote_exists = True
+        while quote_exists:
+            doublequote_start_index = text_copy_1.find("\"",0)
+            singlequote_start_index = text_copy_1.find("'",0)
+            if ((doublequote_start_index < singlequote_start_index) or singlequote_start_index == -1) and (doublequote_start_index != -1):
+                doublequote_end_index = text_copy_1.find("\"",doublequote_start_index+1)
+                if doublequote_end_index != -1:
+                    text_copy_1 = (text_copy_1[:doublequote_start_index] + text_copy_1[doublequote_end_index+1:])
+                else:
+                    #print time.time() - self.t
+                    #print "inside-of-string check done"
+                    return self.cancel ()
+            elif ((singlequote_start_index < doublequote_start_index) or doublequote_start_index == -1 ) and (singlequote_start_index != -1):
+                singlequote_end_index = text_copy_1.find("'",singlequote_start_index+1)
+                if singlequote_end_index != -1:
+                    text_copy_1 = (text_copy_1[:singlequote_start_index] + text_copy_1[singlequote_end_index+1:])
+                else:
+                    #print time.time() - self.t
+                    #print "inside-of-string check done"
+                    return self.cancel ()
+            else:
+                quote_exists = False
+                break
+
+        #print time.time() - self.t
+        #print "inside-of-string check done"
+        
         # We get the incomplete word.
         start = insert.copy()
         while start.backward_char():
-            char = unicode(start.get_char())
+            char = unicode(start.get_char(), 'utf-8')
             if not self.re_alpha.match(char) or char == ".":
                 start.forward_char()
                 break
-        incomplete = unicode(doc.get_text(start, insert, include_hidden_chars=True))
+        incomplete = unicode(doc.get_text(start, insert, include_hidden_chars=True), 'utf-8')
 
         # If the number we're trying to complete is a digit, we stop the completion
         if incomplete.isdigit ():
@@ -195,6 +235,8 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
             incomplete = "" # When pressing . the incomplete word is the one right before the dot.
         else:
             offset = start.get_offset ()
+        
+        offset = len(text[:offset].encode("utf-8"))
 
         # We call the haxe engine to get the list of completion.
         completes = haxe_complete (doc.get_uri_for_display (), text, offset)
