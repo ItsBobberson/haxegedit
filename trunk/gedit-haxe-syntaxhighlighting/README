@@ -1,55 +1,30 @@
-To install the haxe codecompletion plugin for gedit:
+Haxe syntax highlighting 
 
-Execute the install.sh as user to have it installed for user only, or as root to install it system wide.
+#------------------------
+automatic install:
+#------------------------
+for root:
+1) run: install.sh
+2) restart gedit
 
-Relaunch GEdit, go to Edit -> Preferences -> Plugins, and activate Haxe Code Completion.
-
-A quick note about how it works :
-
-If at the root of your project there is a compile.hxml, the plugin will use it to determine the options of your code (ie, if you're doing flash, flash9, php, ...). If it doesn't exists, it will assume flash9.
-
-A typical structure would be the following :
-
-$ find ./src
-./src/compile.hxml
-./src/Main.hx
-./src/org/somesite/mypackage
-./src/org/somesite/mypackage/MyClass.hx
-
-In this case, the completion should work okay.
-
-In case of syntax errors, the plugin generally displays the error, since it can't complete anything. If it doesn't bring up anything at all, try deactivating it and reactivating it in the plugins menu.
-
-That should be it. Good haxing !
+for user:
+1) run: install.sh
+2) restart gedit
 
 
-#----------------------------------------------------------------------------------
-Haxe code completion plugin
-#----------------------------------------------------------------------------------
-haxecodecompletion.plugin and haxecodecompletion folder go to:
-for root: /usr/lib/gedit/plugins
-or
-for user: ~/.local/share/gedit/plugins/
+#------------------------
+manual install:
+#------------------------
+for root: 
+1) copy: haxe.lang to: /usr/share/gtksourceview-3.0/language-specs
+2) copy: haxe.xml to: /usr/share/mime/packages
+3) run: update-mime-database /usr/share/mime
+4) restart gedit
 
+for user:
+1) copy: haxe.lang to: ~/.local/share/gtksourceview-3.0/language-specs
+2) copy: haxe.xml to: ~/.local/share/mime/packages
+3) run: update-mime-database ~/.local/share/mime
+4) restart gedit
 
-#----------------------------------------------------------------------------------
-Preferences and settings dialog:
-#----------------------------------------------------------------------------------
-org.gnome.gedit.plugins.haxecodecompletion.gschema.xml goes to:
--> /usr/share/glib-2.0/schemas
-after copy, run from terminal: 
-sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
-
-The above is not used at the moment, so the preferences dialog (which we don't really need atm) does not work yet.
-glib-compile-schemas also needs root priviliges to add a key to the Gconf settings (which the preferences dialog will use in the future)
-(http://www.micahcarrick.com/gsettings-python-gnome-3.html)
-"There is an issue with the current implementation of GSettings which requires schemas to be compiled and copied to a system directory, thus negating the simplicity and convenience of dropping python plugins into a single directory. Bug #649717 is tracking this issue. "
-
-
-#----------------------------------------------------------------------------------
-additional info:
-#----------------------------------------------------------------------------------
-(https://live.gnome.org/Gedit/Plugins)
-(https://live.gnome.org/Gedit/PythonPluginHowTo)
-(http://www.micahcarrick.com/writing-plugins-for-gedit-3-in-python.html)
-
+(Create folders where necessary.)

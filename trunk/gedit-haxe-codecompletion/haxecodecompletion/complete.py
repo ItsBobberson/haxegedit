@@ -49,7 +49,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     else:
         # TODO This should be parametrable
         command = ["haxe", "-swf-version", "9", "-swf", "/tmp/void.swf", classname, "--display" , "%s@%d" % (classname.replace (".", "/") + ".hx", offset)]
-
+    #print basedir
     proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=basedir)
     out = proc.communicate ()
 

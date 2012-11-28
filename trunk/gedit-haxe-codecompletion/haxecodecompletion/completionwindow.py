@@ -205,7 +205,7 @@ class CompletionWindow(Gtk.Window):
 
         self.tempstr = filter
         for completion in completions:
-            if filter == "" or completion['abbr'].startswith (filter):
+            if filter == "" or ('abbr' in completion and completion['abbr'].startswith (filter)):
                 self.store.append([unicode(completion['word'])])
                 self.current_completions.append (completion)
         self.view.columns_autosize()
