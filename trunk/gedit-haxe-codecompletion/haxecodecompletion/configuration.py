@@ -39,6 +39,7 @@ HXML_FILE = None
 HAXE_EXEC_PATH = "haxe"
 
 __client = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
+#__client.connect("changed::hxml-uri", self.onHxmlUriChange)
 
 # Cached keybinding
 __keybindingComplete = ""

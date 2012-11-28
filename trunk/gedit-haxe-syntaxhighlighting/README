@@ -4,7 +4,7 @@ Haxe syntax highlighting
 automatic install:
 #------------------------
 for root:
-1) run: install.sh
+1) run: sudo install.sh
 2) restart gedit
 
 for user:
@@ -18,7 +18,7 @@ manual install:
 for root: 
 1) copy: haxe.lang to: /usr/share/gtksourceview-3.0/language-specs
 2) copy: haxe.xml to: /usr/share/mime/packages
-3) run: update-mime-database /usr/share/mime
+3) run: sudo update-mime-database /usr/share/mime
 4) restart gedit
 
 for user:

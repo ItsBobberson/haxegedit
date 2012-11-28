@@ -28,25 +28,24 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
         self.geditBottomPanel = self.geditWindow.get_bottom_panel()
         self.geditBottomPanel.add_item(self.scrolledWindow, "haxe_bottom_panel", "haXe errors", Gtk.Image.new_from_file(self.dataDir + "/" + "icons" + "/" + "haxe_logo_16.png"))# Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
         self.geditBottomPanel.activate_item(self.scrolledWindow)
-            
-    def onTextViewClick(self, textView, signal):
-        if signal.type == Gdk.EventType._2BUTTON_PRESS:
+        
+        
+    def onTextViewClick(self, textView, event):
+        if event.type == Gdk.EventType._2BUTTON_PRESS:
             errorInfo = self.parseErrorLine()
             if errorInfo == None:
-                return
+                return True
+            characterRange = errorInfo['characterRange']
+            if characterRange.find('-') == -1:
+                characterRange = characterRange + "-" + characterRange
+            charRange = characterRange.split("-")
+            charRangeStart = int(charRange[0])
+            charRangeEnd = int(charRange[1])
             lineNr = int(errorInfo['lineNumber'])
-            charRanges = errorInfo['characterRange'].split("-")
-            charRangeStart = int(charRanges[0])
-            charRangeEnd = int(charRanges[1])
-            charRangeSpan = charRangeEnd - charRangeStart
-            
+            offset = charRangeEnd
             if errorInfo['error'].startswith('Unexpected'):
                 offset = charRangeStart
-            elif errorInfo['error'].find(' should be ') != -1:    
-                offset = charRangeEnd
-            else:
-                offset = charRangeEnd
- 
+  
             if errorInfo['fileLocation'][0] == "/" :
                 path = errorInfo['fileLocation']
             else:
@@ -63,25 +62,45 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
                 i = buf.get_iter_at_line_offset(lineNr - 1, offset)
                 buf.place_cursor(i)
                 view.scroll_to_cursor()
-                
-            if errorInfo['error'].find(' should be ') != -1:
+
+            if errorInfo['error'].find(' should be ') != -1 or errorInfo['error'].startswith('Unknown identifier') or errorInfo['error'].startswith('Class not found'):
                 view = self.geditWindow.get_active_view()
                 buf = view.get_buffer()
                 
                 insertMark = buf.get_insert()
                 selectionBoundMark = buf.get_selection_bound()
-                
                 startIter = buf.get_iter_at_mark(insertMark)
                 startIter.backward_chars(charRangeEnd - charRangeStart)
                 buf.move_mark(selectionBoundMark, startIter)
                 
-        if signal.type == Gdk.EventType._3BUTTON_PRESS:
+            if errorInfo['error'].startswith('Unexpected'):
+                view = self.geditWindow.get_active_view()
+                buf = view.get_buffer()
+                
+                insertMark = buf.get_insert()
+                selectionBoundMark = buf.get_selection_bound()
+                startIter = buf.get_iter_at_mark(insertMark)
+                startIter.forward_chars(charRangeEnd - charRangeStart)
+                buf.move_mark(selectionBoundMark, startIter)
+                
+            if errorInfo['error'].startswith("Invalid character"):
+                view = self.geditWindow.get_active_view()
+                buf = view.get_buffer()
+                
+                insertMark = buf.get_insert()
+                selectionBoundMark = buf.get_selection_bound()
+                startIter = buf.get_iter_at_mark(insertMark)
+                startIter.forward_chars(1)
+                buf.move_mark(selectionBoundMark, startIter)
+
+            return True
+                        
+        if event.type == Gdk.EventType._3BUTTON_PRESS:
             errorInfo = self.parseErrorLine()
-            if errorInfo == None:
-                return
-            if errorInfo['errorLine'].endswith("Missing ;"):
+            if errorInfo != None and errorInfo['errorLine'].endswith("Missing ;"):
                 self.geditWindow.get_active_document().insert_at_cursor (";")
-            
+            return True
+        
     def parseErrorLine(self):
         doc = self.textView.get_buffer()
         iter = doc.get_iter_at_mark(doc.get_insert())
@@ -119,7 +138,7 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
         #get character range
         lineNumberEnd.forward_char()#skip colon
         lineNumberEnd.forward_char()#skip space
-        lineNumberEnd.forward_word_end()#skip characters
+        lineNumberEnd.forward_word_end()#skip 'characters'
         lineNumberEnd.forward_char()#skip space
         characterRangeEnd = lineNumberEnd.copy()
         while characterRangeEnd.forward_char():

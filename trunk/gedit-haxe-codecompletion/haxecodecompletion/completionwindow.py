@@ -6,11 +6,33 @@ import time
 
 class CompletionWindow(Gtk.Window):
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
+    
+    def __init__(self, parent, plugin):
+        """Window for displaying a list of completions."""
+        Gtk.Window.__init__(self, type=Gtk.WindowType.TOPLEVEL);
+        self.set_decorated(False)
+        self.set_transient_for(parent)
+        self.set_border_width(4)
+        self.connect('focus-out-event', self.focus_out_event) 
+        self.connect('key-press-event', self.key_press_event)
+        
+        self.gedit_window = parent
+        self.plugin = plugin
+        self.tempstr = ""
+        self.current_completions = []
+        self.completions = None
+        self.store = None
+        self.view = None
+        
+        self.init_tree_view()
+        self.init_frame()
+
+        #self.grab_focus()
+        
     def init_frame(self):
         """Initialize the frame and scroller around the tree view."""
         self.set_size_request(400, 400)
         scroller = Gtk.ScrolledWindow()
-        #scroller.set_policy(Gtk.POLICY_AUTOMATIC, Gtk.POLICY_NEVER)
         scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scroller.add(self.view)
         frame = Gtk.Frame()
@@ -24,10 +46,6 @@ class CompletionWindow(Gtk.Window):
         #self.text.set_size_request(300, 200)
         #self.text.set_sensitive(False)
 
-        #scroller_text = Gtk.ScrolledWindow() 
-        #scroller_text.set_policy(Gtk.POLICY_AUTOMATIC, Gtk.POLICY_AUTOMATIC)
-        #scroller_text.add(self.text)
-        #hbox.add(scroller_text)
         frame.add(hbox)
         self.add(frame)
 
@@ -43,40 +61,10 @@ class CompletionWindow(Gtk.Window):
         self.view.set_headers_visible(False)
         self.view.set_rules_hint(True)
         selection = self.view.get_selection()
-        #selection.set_mode(Gtk.SELECTION_SINGLE)
         selection.set_mode(Gtk.SelectionMode.SINGLE)
         self.view.set_size_request(400, 200)
         self.view.connect('row-activated', self.row_activated)
         self.view.connect('cursor-changed', self.row_selected)
-
-    """Window for displaying a list of completions."""
-
-    def __init__(self, parent, plugin):
-
-        Gtk.Window.__init__(self, type=Gtk.WindowType.TOPLEVEL);
-        self.connect('key-press-event', self.key_press_event)
-        self.set_decorated(False)
-        self.store = None
-        self.view = None
-        self.set_transient_for(parent)
-
-        self.set_border_width(1)
-        self.init_tree_view()
-        self.init_frame()
-
-        self.connect('focus-out-event', self.focus_out_event) 
-        
-
-        self.gedit_window = parent
-        self.plugin = plugin
-
-        # temporary string used to filter the possible completions 
-        self.tempstr = ""
-        self.current_completions = []
-        self.completions = None
-
-        self.grab_focus()
-
 
     ################### USEFUL CODE GOES BEYOND THAT LINE ######################
 
@@ -196,7 +184,8 @@ class CompletionWindow(Gtk.Window):
         self.completions = None
         self.current_completions = []
         self.tempstr = ""
-        self.hide()#self.destroy()
+        #self.hide()
+        self.destroy()
         
     def focus_out_event(self, *args):
         self.remove()
@@ -204,7 +193,6 @@ class CompletionWindow(Gtk.Window):
     def get_selected(self):
         """Get the selected row."""
         selection = self.view.get_selection()
-        #return selection.get_selected_rows()[1][0][0]
         return selection.get_selected_rows()[1][0].get_indices()[0]
 
     def row_selected(self, treeview, data = None):
