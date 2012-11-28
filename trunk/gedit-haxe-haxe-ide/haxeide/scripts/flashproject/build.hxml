@@ -1,0 +1,5 @@
+-main Main
+-cp src
+-swf9 ./bin/index.swf
+
+-cmd flashplayer ./bin/index.swf
