@@ -17,7 +17,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.name = "haxeide"
         self.busy=False;
         
+        
     def do_activate(self):
+        self.dataDir = self.plugin_info.get_data_dir()
         self.toolBar = ToolBar(self)
         #self.sidePanel = SidePanel(self)
         self.bottomPanel = BottomPanel(self)
@@ -41,6 +43,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
              
     def on_view_key_press_event(self, view, event):
         """
+        #build on key press (blocks)
         doc = self.window.get_active_document()
         try:
             if not doc.get_uri_for_display().endswith ('hx'):
@@ -80,27 +83,45 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(out[1])
         else:
-            self.openFile(destinationFolder + "/" + folderName, "build.hxml", True)
-            self.openFile(destinationFolder + "/" + folderName + "/" + "src" , "Main.hx", True)
+            self.openFile(destinationFolder + "/" + folderName+ "/" + "build.hxml", True)
+            self.openFile(destinationFolder + "/" + folderName + "/" + "src" +"/" "Main.hx", True)
             self.setFileBrowserRoot(destinationFolder + "/" + folderName)
 
-    def openFile(self, folderPath, fileName, jumpTo):
-        uri = "file://" + "/" + folderPath + "/" + fileName
+    def openProject(self, hxmlFile ):
+        fileName = os.path.basename(hxmlFile)
+        folderPath =  os.path.dirname(hxmlFile)
+        self.openFile(hxmlFile, True)
+        self.setFileBrowserRoot(folderPath)
+        self.setHxmlFile(hxmlFile)
+        
+    def openSession(self, hxmlFile ):
+        fileName = os.path.basename(hxmlFile)
+        folderPath =  os.path.dirname(hxmlFile)
+        self.openFile(hxmlFile, False)
+        self.setFileBrowserRoot(folderPath)
+        sessionsHash = Configuration.getSessions()
+        session = []
+        if hxmlFile in sessionsHash:
+            session = sessionsHash[hxmlFile]
+        for i in session:
+            self.openFile(i, False)
+            
+    def openFile(self, filePath, jumpTo):
+        #print filePath
+        #print os.path.exists(filePath)
+        #print os.path.isfile(filePath)
+        if not os.path.isfile(filePath):
+            return
+        uri = "file://" + filePath
+        #Gio.file_new_for_path(os.path.expanduser('~')
+        #gio_file = Gio.file_new_for_path(filePath)
         gio_file = Gio.file_new_for_uri(uri)
         tab = self.window.get_tab_from_location(gio_file)
         if tab == None:
             tab = self.window.create_tab_from_location( gio_file, None, 0, 0, False, False )
         if jumpTo:
             self.window.set_active_tab(tab)
-            if fileName.endswith(".hxml"):
-                self.setHxml()
-  
-    def openProject(self, hxmlFile ):
-        fileName = os.path.basename(hxmlFile)
-        folderPath =  os.path.dirname(hxmlFile)
-        self.openFile(folderPath, fileName, True)
-        self.setFileBrowserRoot(folderPath)
-        
+
     def setFileBrowserRoot(self, location):
         object_path = '/plugins/filebrowser'
         method = "set_root"
@@ -120,6 +141,10 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
             #print relies on the file browser plugin
 
+    def setHxmlFile(self, hxmlPath):
+        Configuration.setHxml(hxmlPath)
+        self.toolBar.setHxml(hxmlPath)
+        
     def setHxml(self):
         doc = self.window.get_active_document()
         self.hxmlPath = doc.get_uri_for_display()
@@ -174,4 +199,29 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.busy = False
             
     def saveSession(self):
-        print "TODO saveSession()"
+        hxmlPath = self.sf(Configuration.getHxmlFile())
+        if hxmlPath == None or hxmlPath == "":
+            return
+        sessionsHash = Configuration.getSessions()
+        sessionsHash[hxmlPath] = [hxmlPath]
+        docs = self.window.get_documents()
+        for d in docs:
+            uri = self.sf(d.get_uri_for_display())
+            if uri != hxmlPath:
+                sessionsHash[hxmlPath].append(uri)
+        Configuration.saveSessions(sessionsHash)
+        
+    def sf(self, path):
+        if path == None or path=="":
+            return path
+        if path[1]=="/":
+            return path[1:]
+        return path
+        
+            
+                
+        
+        
+    
+
+        

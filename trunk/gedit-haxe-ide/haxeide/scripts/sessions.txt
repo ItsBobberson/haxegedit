@@ -1,0 +1,11 @@
+[session]
+//home/jan/MyDocuments/haxe-test/gedit-test/build.hxml
+//home/jan/MyDocuments/haxe-test/gedit-test
+//home/jan/MyDocuments/haxe-test/gedit-test/build.hxml
+//home/jan/MyDocuments/haxe-test/gedit-test/src/Main.hx
+[session]
+//home/jan/MyDocuments/haxe-test/ctest/build.hxml
+//home/jan/MyDocuments/haxe-test/ctest
+//home/jan/MyDocuments/haxe-test/ctest/build.hxml
+/home/jan/MyDocuments/haxe-test/ctest/build.hxml
+//home/jan/MyDocuments/haxe-test/ctest/src/Main.hx
