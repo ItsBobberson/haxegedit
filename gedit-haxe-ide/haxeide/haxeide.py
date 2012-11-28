@@ -29,6 +29,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.toolBar.remove()
         #self.sidePanel.remove()
         self.bottomPanel.remove()
+        Configuration.setHxml("")
         self.window.disconnect(self.handlerId)
         
     def do_create_configure_widget(self):
@@ -66,11 +67,11 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(out[1])
         else:
-            self.openFile(destinationFolder, folderName, "build.hxml", True)
-            self.openFile(destinationFolder, folderName, "src/Main.hx", True)
+            self.openFile(destinationFolder + "/" + folderName, "build.hxml", True)
+            self.openFile(destinationFolder + "/" + folderName + "/src" , "Main.hx", True)
 
-    def openFile(self, destinationFolder, folderName, fileName, jumpTo):
-        uri = "file://" + "/" + destinationFolder + "/" + folderName + "/" + fileName
+    def openFile(self, folderPath, fileName, jumpTo):
+        uri = "file://" + "/" + folderPath + "/" + fileName
         gio_file = Gio.file_new_for_uri(uri)
         tab = self.window.get_tab_from_location(gio_file)
         if tab == None:
@@ -79,7 +80,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.window.set_active_tab(tab)
             if fileName.endswith(".hxml"):
                 self.setHxml()
-        self.setFileBrowserRoot(destinationFolder+"/"+folderName)
+        self.setFileBrowserRoot(folderPath)
                 
     def setFileBrowserRoot(self, location):
         object_path = '/plugins/filebrowser'
@@ -96,7 +97,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
             side_panel.set_property("visible", True)
         else:
-            pass
+            bottom_panel.set_property("visible", True)
+            self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
             #print relies on the file browser plugin
             
     def openProject(self, folder ):
@@ -145,7 +147,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 bottom_panel.set_property("visible", True)
                 self.bottomPanel.setText(out[1])
             else:
-                bottom_panel.set_property("visible", False)
+                if Configuration.getAutoHideConsole():
+                    bottom_panel.set_property("visible", False)
         except Exception, e:
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(e)

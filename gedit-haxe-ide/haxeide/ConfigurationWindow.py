@@ -2,6 +2,7 @@ from gi.repository import GObject, Gtk, Gdk, Gedit
 import string
 from SettingsFrame import SettingsFrame
 from ProjectFrame import ProjectFrame
+from SessionFrame import SessionFrame
 
 class ConfigurationWindow(Gtk.Window):
 
@@ -15,7 +16,7 @@ class ConfigurationWindow(Gtk.Window):
         self.notebook = Gtk.Notebook()
 
         self.notebook.append_page(ProjectFrame(plugin, self), Gtk.Label("Create new project"))
-        self.notebook.append_page(Gtk.Label("projects and sessions (TODO)"), Gtk.Label("Sessions and Projects"))
+        self.notebook.append_page(SessionFrame(plugin, self), Gtk.Label("Sessions and Projects"))
         self.notebook.append_page(SettingsFrame(plugin), Gtk.Label("Settings"))
         
         self.notebook.set_margin_left(20)

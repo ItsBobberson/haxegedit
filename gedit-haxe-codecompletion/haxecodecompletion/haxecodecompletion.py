@@ -22,6 +22,7 @@
 
 from gi.repository import GObject, Gtk, Gdk, Gedit, PeasGtk
 import re
+import time
 from complete import haxe_complete
 import configurationdialog
 import configuration
@@ -44,6 +45,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         self.islaunching = False
         self.tempstring = ""
         self.w=None
+        self.t=None
 
     def do_activate(self):
         """Activate plugin."""
@@ -87,7 +89,63 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
     def do_update_state(self):
         #print "Window %s state updated." % self.window
         pass
+        
+    def on_window_tab_added(self, window, tab):
+        """Connect the document and view in tab."""
+        self.connect_view(tab.get_view())
+        
+    def is_configurable(self):
+        """Show the plugin as configurable in gedits plugin list."""
+        return True
+        
+    def on_view_key_press_event(self, view, event):
+        #self.t = time.time()
+        #print self.t
+        #print "on_view_key_press_event started"
+        
+        #print "view event.keyval %s" % event.keyval
+        if self.islaunching:
+            self.tempstring += event.string
+        """Display the completion window or complete the current word."""
+        active_doc = self.window.get_active_document()
+        #print "active_doc.get_uri_for_display() %s ." % active_doc.get_uri_for_display()
+        #print "active_doc.get_short_name_for_display() %s ." % active_doc.get_short_name_for_display()
+        # If the current tab is not a Haxe sourcefile, do not attempt to complete
+        # TODO It would be best to never get called in the first place.
 
+        try:
+            if not active_doc.get_uri_for_display().endswith ('hx'):
+                return self.cancel ()
+        except:
+            return self.cancel ()
+
+        #  The "Alt"-key might be mapped to something else
+        # TODO Find out which keybinding are already in use.
+        keybinding = configuration.getKeybindingCompleteTuple()
+
+        ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
+        alt_pressed = (event.state & Gdk.ModifierType.MOD1_MASK) == Gdk.ModifierType.MOD1_MASK
+        shift_pressed = (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK
+        # It's ok if a key is pressed and it's needed or
+        # if a key is not pressed if it isn't needed.
+        ctrl_ok = not (keybinding[configuration.MODIFIER_CTRL] ^ ctrl_pressed )
+        alt_ok =  not (keybinding[configuration.MODIFIER_ALT] ^ alt_pressed )
+        shift_ok = not (keybinding[configuration.MODIFIER_SHIFT] ^ shift_pressed )
+        
+        keyval = Gdk.keyval_from_name(keybinding[configuration.KEY])
+        key_ok = (event.keyval == keyval)
+        
+        #print time.time() - self.t
+        #print "on_view_key_press_event done"
+        #self.t = time.time()
+        
+        if event.keyval == Gdk.KEY_period and configuration.getDotComplete():
+            return self.display_completions(view, event)
+        elif ctrl_ok and alt_ok and shift_ok and key_ok:
+            return self.display_completions(view, event)
+
+        return self.cancel() 
+           
     def display_completions(self, view, event):
         """Find completions and display them."""
         doc = view.get_buffer()
@@ -145,63 +203,18 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         if not completes:
             return self.cancel()
         #print incomplete
+        #print time.time() - self.t
+        #print "display_completions done"
+        #self.t = time.time()
+        
+        
         self.show_popup (view, completes, incomplete)
 
-    def is_configurable(self):
-        """Show the plugin as configurable in gedits plugin list."""
-        return True
-
-    def on_view_key_press_event(self, view, event):
-        #print "view event.keyval %s" % event.keyval
-        if self.islaunching:
-            self.tempstring += event.string
-        """Display the completion window or complete the current word."""
-        active_doc = self.window.get_active_document()
-        #print "active_doc.get_uri_for_display() %s ." % active_doc.get_uri_for_display()
-        #print "active_doc.get_short_name_for_display() %s ." % active_doc.get_short_name_for_display()
-        # If the current tab is not a Haxe sourcefile, do not attempt to complete
-        # TODO It would be best to never get called in the first place.
-
-        try:
-            if not active_doc.get_uri_for_display().endswith ('hx'):
-                return self.cancel ()
-        except:
-            return self.cancel ()
-
-        #  The "Alt"-key might be mapped to something else
-        # TODO Find out which keybinding are already in use.
-        keybinding = configuration.getKeybindingCompleteTuple()
-
-        ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
-        alt_pressed = (event.state & Gdk.ModifierType.MOD1_MASK) == Gdk.ModifierType.MOD1_MASK
-        shift_pressed = (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK
-        # It's ok if a key is pressed and it's needed or
-        # if a key is not pressed if it isn't needed.
-        ctrl_ok = not (keybinding[configuration.MODIFIER_CTRL] ^ ctrl_pressed )
-        alt_ok =  not (keybinding[configuration.MODIFIER_ALT] ^ alt_pressed )
-        shift_ok = not (keybinding[configuration.MODIFIER_SHIFT] ^ shift_pressed )
-        
-        keyval = Gdk.keyval_from_name(keybinding[configuration.KEY])
-        key_ok = (event.keyval == keyval)
-        
-        if event.keyval == Gdk.KEY_period and configuration.getDotComplete():
-            return self.display_completions(view, event)
-        elif ctrl_ok and alt_ok and shift_ok and key_ok:
-            return self.display_completions(view, event)
-
-        return self.cancel()
-
-    def on_window_tab_added(self, window, tab):
-        """Connect the document and view in tab."""
-        self.connect_view(tab.get_view())
-
-
     def show_popup(self, view, completions, tempstr=""):
-                
+        """Show the completion window."""
         self.islaunching = True
         self.tempstring = ""
         
-        """Show the completion window."""
         # Determine the position in x, y of the insert mark to later place the window
         wd = Gtk.TextWindowType.TEXT
         doc = view.get_buffer ()
@@ -226,3 +239,8 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
 
         popup.set_completions(completions, tempstr)
         popup.show_all()
+        
+        #print time.time() - self.t
+        #print "show_popup done"
+        #self.t = time.time()
+        

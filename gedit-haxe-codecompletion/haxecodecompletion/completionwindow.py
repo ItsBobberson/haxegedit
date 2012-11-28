@@ -2,6 +2,7 @@ from gi.repository import GObject, Gtk, Gdk, Gedit
 import configuration
 import re
 import string
+import time
 
 class CompletionWindow(Gtk.Window):
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
@@ -184,7 +185,6 @@ class CompletionWindow(Gtk.Window):
         try:
             completion = self.current_completions[ self.get_selected () ]['abbr']
             completion = completion[len(self.tempstr):]
-
             self.insert (completion)
             if hide:
                 self.remove()
@@ -196,8 +196,7 @@ class CompletionWindow(Gtk.Window):
         self.completions = None
         self.current_completions = []
         self.tempstr = ""
-        #self.destroy()
-        self.hide()
+        self.hide()#self.destroy()
         
     def focus_out_event(self, *args):
         self.remove()
@@ -219,7 +218,7 @@ class CompletionWindow(Gtk.Window):
         self.complete()
 
     def set_completions(self, completions, filter=""):
-    
+        self.t = time.time()
         #doc = self.gedit_window.get_active_document ()
         #insert = doc.get_iter_at_mark (doc.get_insert ())
         #curpos = insert.get_offset ()
@@ -253,6 +252,9 @@ class CompletionWindow(Gtk.Window):
             #print "len (self.current_completions) %s" % len (self.current_completions)
             if configuration.getEmptyHideComplete():
                 self.remove()
+        #print time.time() - self.t
+        #print "set_completions done"
+        #self.t = time.time()
 
     def set_font_description(self, font_desc):
         """Set the label's font description."""
