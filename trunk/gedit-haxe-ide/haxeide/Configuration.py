@@ -32,6 +32,7 @@ GCONF_DOT_AUTO_HIDE_CONSOLE = 'auto-hide-console'
 GCONF_DOT_AUTO_HIDE_SIDE_PANEL = 'auto-hide-side-panel'
 GCONF_HXML_PATH = "hxml-uri"
 
+GCONF_DEBUG_FILES = "debug-history"
 GCONF_SESSIONS = "sessions"
 GCONF_SESSION_PATH_OFFSET = "session-path-offset"
 GCONF_SESSION_PATH_SHOW_HXML = "session-path-show-hxml"
@@ -415,7 +416,22 @@ def saveSessions(sessionsHash):
                 content += fileName + "\n"
     __settings.set_string(GCONF_SESSIONS, content)
     
-
+"""
+GCONF_DEBUG_FILES
+"""  
+def getDebugFiles():
+    txt = __settings.get_string(GCONF_DEBUG_FILES)
+    if txt == "" or txt == None or txt == "None":
+        return []
+    return txt.split('\n')
+    
+def saveDebugFiles(debugFiles, file):
+    out = [file]
+    for f in debugFiles:
+        if f[0]!=file:
+            out.append(f[0]) 
+    __settings.set_string(GCONF_DEBUG_FILES,'\n'.join(out))
+    
 """
 if __name__ == "__main__":
     __settings.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)

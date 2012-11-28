@@ -170,6 +170,11 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         f = open(targetFile)
         lines = f.readlines()
         f.close()
+        debugLine = lines[int(lineNr)-1]
+        if debugLine.find('HX_SOURCE_POS("') != -1 or debugLine.find('HX_SOURCE_PUSH("') != -1:
+            self.debugger.sendDebugCommand("next")
+            return
+            
         hxSourcePos = lines[int(lineNr)-2]
         if hxSourcePos.find('HX_SOURCE_POS("') != -1:
             hxpathFileNr = hxSourcePos.split('HX_SOURCE_POS("')[-1].split('",') #[ src/Main.hx, 29) ]

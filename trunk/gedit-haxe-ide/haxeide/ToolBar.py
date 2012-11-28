@@ -171,36 +171,6 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.debugButton.set_sensitive(True)
         self.hxmlButton.set_tooltip_text(hxml)
 
-        """
-        self.projectsComboBox = Gtk.ComboBox()
-        self.projectsComboBox.connect("changed", self.onProjectsComboBoxChange)
-        listStore = Gtk.ListStore(str,str)
-        self.sessionsHash = Configuration.getSessions()
-        for key in self.sessionsHash:
-            projectDirName = os.path.basename(os.path.dirname(key))
-            listStore.append([projectDirName,key])
-            
-        renderer_text = Gtk.CellRendererText()
-        self.projectsComboBox.pack_start(renderer_text, True)
-        self.projectsComboBox.add_attribute(renderer_text, "text", 0)
-        self.projectsComboBox.set_entry_text_column(0)
-        self.projectsComboBox.set_model(listStore)
-        
-        self.projectsComboBoxToolItem = Gtk.ToolItem()
-        self.projectsComboBoxToolItem.add(self.projectsComboBox)
-        """
-    """    
-    def onProjectsComboBoxChange(self, combo):
-        tree_iter = combo.get_active_iter()
-        if tree_iter != None:
-            model = combo.get_model()
-            folder, hxml = model[tree_iter][:2]
-            self.plugin.window.close_all_tabs()
-            self.plugin.openSession(hxml, True, True)
-        else:
-            entry = combo.get_child()
-            print "Entered: %s" % entry.get_text()
-    """   
     def handleCloseAllDocuments(self):
         #if self.builder.get_object("closeTabsCheckBox").get_active():
         unsavedDocuments = self.plugin.window.get_unsaved_documents()
