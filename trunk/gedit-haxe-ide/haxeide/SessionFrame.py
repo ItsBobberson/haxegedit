@@ -34,11 +34,12 @@ class SessionFrame(Gtk.Frame):
         self.show_all()
 
     def onOpenProjectBtnClick(self, button):
-        fileName = os.path.basename(self.hxmlFile)
-        folderPath =  os.path.dirname(self.hxmlFile)
+        #fileName = os.path.basename(self.hxmlFile)
+        #folderPath =  os.path.dirname(self.hxmlFile)
         if self.builder.get_object("closeTabsCheckBox").get_active():
             self.plugin.window.close_all_tabs()
-        self.plugin.openFile(folderPath, fileName, True)
+        #self.plugin.openFile(folderPath, fileName, True)
+        self.plugin.openProject(self.hxmlFile)
         self.win.destroy()
         
     def onFileSelect(self,fileChooser):

@@ -11,7 +11,12 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
         self.plugin = plugin
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
-
+        
+        #self.builder.add_from_file(os.path.join(self.dataDir, "ui", "BottomPanel.glade"))
+        #self.ui = Gtk.Builder()
+        #self.ui.add_from_file(os.path.join(self.dataDir, "ui", "BottomPanel.ui"))
+        #print self["scrolledWindow"]
+        
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.dataDir + "/" + "ui" + "/" + "BottomPanel.glade")
         self.builder.connect_signals(self)
@@ -45,13 +50,13 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
             offset = charRangeEnd
             if errorInfo['error'].startswith('Unexpected'):
                 offset = charRangeStart
-  
+
             if errorInfo['fileLocation'][0] == "/" :
-                path = errorInfo['fileLocation']
+                path = "/" + errorInfo['fileLocation']
             else:
                 path = os.path.dirname(self.plugin.hxmlPath) + "/" + errorInfo['fileLocation']
-
-            gio_file = Gio.file_new_for_uri("file://" + path)
+                
+            gio_file = Gio.file_new_for_path(path)
             tab = self.geditWindow.get_tab_from_location(gio_file)
             if tab == None:
                 tab = self.geditWindow.create_tab_from_location(gio_file, None, lineNr, offset+1, False, True )
