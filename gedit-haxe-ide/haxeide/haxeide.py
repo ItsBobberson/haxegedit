@@ -11,7 +11,7 @@ import subprocess
 class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     __gtype_name__ = "haxeide"
     window = GObject.property(type=Gedit.Window)
-
+    
     def __init__(self):
         GObject.Object.__init__(self)
         self.name = "haxeide"
@@ -41,39 +41,23 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def do_update_state(self):
         pass
        
-    def createProject(self, target, destinationFolder, folderName, package, mainName):
+    def createProject(self, target, destinationFolder, folderName, mainName, package):
+        root = destinationFolder + "/" + folderName
+        hxml = destinationFolder + "/" + folderName + "/" + "build.hxml"
+        main = destinationFolder + "/" + folderName + "/" + "src" +"/" + mainName.replace(".", "/")+".hx"
+    
         cwd = self.plugin_info.get_data_dir() + "/" + "scripts"
-        command = ["./createproject.sh", target, destinationFolder, folderName, package, mainName]
+        command = ["./createproject.sh", target, destinationFolder, folderName, mainName]
         proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         out = proc.communicate ()
-        str0 = out[0]
-        str1 = out[1]
-
-        if proc.returncode != 0:
-            Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
-            self.bottomPanel.setText(out[1])
-        else:
-            if len(package) == 0:
-                packagePart = ""
-            else:
-                packagePart = package.replace(".", "/") + "/"
-            
-            mainNameParts = mainName.split(".")
-            mainShortName = mainNameParts[len(mainNameParts)-1]
-            
-            main = destinationFolder + "/" + folderName + "/" + "src" +"/" + packagePart + mainShortName+".hx"
-            hxml = destinationFolder + "/" + folderName+ "/" + "build.hxml"
-            root = destinationFolder + "/" + folderName
-            
-            print root
-            print main
-            print hxml
-            
+        if proc.returncode == 0:
             self.openFile(hxml, True)
             self.openFile(main, True)
-            
             self.setFileBrowserRoot(root)
             self.setHxml(hxml)
+        else:
+            Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
+            self.bottomPanel.setText(out[1])
 
     def openProject(self, hxml, useHxml, setRoot ):
         self.openFile(hxml, True)
@@ -202,12 +186,118 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 self.bottomPanel.setText("Building done.")
                 if Configuration.getAutoHideConsole():
                     bottom_panel.set_property("visible", False)
-                    
+                
+                command = ["bash","run.sh"]
+                proc = subprocess.Popen(command,cwd=os.path.dirname(hxml),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out = proc.communicate()
+                if proc.returncode != 0:
+                    bottom_panel.set_property("visible", True)
+                    self.bottomPanel.setText(out[1])
+                
+                #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
+
         except Exception, e:
             bottom_panel.set_property("visible", True)
-            self.bottomPanel.setText(e)
+            self.bottomPanel.setText(e.__str__())
         self.busy = False
         
+    def debug(self):
+        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+        bottom_panel.set_property("visible", True)
+        command = ["/home/jan/Programs/adobe/flex_sdk_4.6.0.23201B/bin/fdb"]
+        bin="/home/jan/MyDocuments/haxe-test/debugger-test/bin"
+        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=bin)
+        line1 = proc.stdout.readline() # Adobe fdb (Flash Player Debugger) [build 23201]
+        line2 = proc.stdout.readline() # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
+        proc.stdout.flush()
+        self.bottomPanel.appendText(line1) 
+        self.bottomPanel.appendText(line2)
+        
+        proc.stdin.write("info\n")
+        proc.stdin.flush()
+        
+        
+    def tempdebug(self):
+        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+        bottom_panel.set_property("visible", True)
+        command = ["/home/jan/Programs/adobe/flex_sdk_4.6.0.23201B/bin/fdb"]#, "run", "/home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf"]
+        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd="/home/jan/MyDocuments/haxe-test/debugger-test/bin")
+
+        #out = proc.communicate("info")
+        #print proc.returncode
+        #self.bottomPanel.appendText(out[0])
+        
+        #proc.stdin.write("run /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf")
+        
+        line1 = proc.stdout.readline() # Adobe fdb (Flash Player Debugger) [build 23201]
+        line2 = proc.stdout.readline() # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
+        proc.stdout.flush()
+        self.bottomPanel.appendText(line1) 
+        self.bottomPanel.appendText(line2)
+        
+        proc.stdin.write("info\n")
+        proc.stdin.flush()
+        while True:
+            try:
+                line = proc.stdout.readline()
+                self.bottomPanel.appendText(line)
+                
+            except Exception, e:
+                print e
+                break
+        proc.stdout.flush()    
+       
+
+        """
+        proc.stdin.write("info stack\n")
+        proc.stdin.flush()
+        
+        line = proc.stdout.readline() #(fdb) Command not valid without a session.
+        proc.stdout.flush()
+        self.bottomPanel.appendText(line)
+
+        proc.stdin.write("info stack\n")
+        proc.stdin.flush()
+        
+        line = proc.stdout.readline() #(fdb) Command not valid without a session.
+        proc.stdout.flush()
+        self.bottomPanel.appendText(line)
+        """
+        """
+        counter = 0
+        while True:
+            
+            line = proc.stdout.readline()
+            print counter
+            print line == ""
+            print line == "\n"
+            if len(line) >2:
+                 print line
+                self.bottomPanel.appendText(line)
+            else:
+                break
+            counter = counter + 1
+        """
+        """ 
+        while True:
+            line = proc.stdout.readline()
+            if line != '':
+                print line
+            else:
+                break
+        """  
+        
+        """
+        while True:
+            try:
+                line = proc.stdout.readline()
+                print line
+                self.bottomPanel.appendText(line)
+            except Exception, e:
+                print e
+        """
+        
+           
     def on_view_key_press_event(self, view, event):
         """
         #build on key press (blocks)

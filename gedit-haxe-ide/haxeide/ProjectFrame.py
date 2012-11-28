@@ -22,7 +22,6 @@ class ProjectFrame(Gtk.Frame):
         uri = Configuration.getProjectsLocation()
         if uri !=None and uri!="":
             self.builder.get_object("filechooser").set_current_folder_uri(uri)
-            
         self.show_all()
         
     def onCreateProjectButtonClick(self, button):
@@ -40,7 +39,7 @@ class ProjectFrame(Gtk.Frame):
                 target = "neko"
             elif self.builder.get_object("cppCheckBtn").get_active():
                 target = "cpp"
-            self.plugin.createProject(target, destinationFolder, projectFolder, package, mainFile)
+            self.plugin.createProject(target, destinationFolder, projectFolder, mainFile, package)
             self.win.destroy()
         else:
             pass

@@ -32,7 +32,7 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
         self.textView.connect("button-press-event", self.onTextViewClick)
        
         self.geditBottomPanel = self.geditWindow.get_bottom_panel()
-        self.geditBottomPanel.add_item(self.scrolledWindow, "haxe_bottom_panel", "haXe errors", Gtk.Image.new_from_file(self.dataDir + "/" + "icons" + "/" + "haxe_logo_16.png"))# Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
+        self.geditBottomPanel.add_item(self.scrolledWindow, "haxe_bottom_panel", "errors", Gtk.Image.new_from_file(self.dataDir + "/" + "icons" + "/" + "haxe_logo_16.png"))# Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
         self.geditBottomPanel.activate_item(self.scrolledWindow)
         
         
@@ -131,8 +131,11 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
                 lineNumberEnd = locationEnd.copy()
                 #print fileLocation
                 break
-        
-        
+        try:
+            lineNumberEnd
+        except NameError:
+            return None
+            
         #get the line number
         locationEnd.forward_char()#skip colon
         while lineNumberEnd.forward_char():
@@ -171,4 +174,8 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
     def setText(self, txt):
         textBuffer = self.textView.get_buffer()
         textBuffer.set_text(txt)
+        
+    def appendText(self, txt):
+        textBuffer = self.textView.get_buffer()
+        textBuffer.insert(textBuffer.get_end_iter(), txt)
        
