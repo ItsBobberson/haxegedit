@@ -18,16 +18,30 @@ class ProjectFrame(Gtk.Frame):
         self.vbox = self.builder.get_object("vbox")
         self.add(self.vbox)
         
-        uri = Configuration.getProjectsLocation()
+        uri = Configuration.getProjectDefaultLocation()
         if uri !=None and uri!="":
             self.builder.get_object("filechooser").set_current_folder_uri(uri)
+            
+        package = Configuration.getProjectDefaultPackage()
+        if package ==None or package =="None":
+            package=""
+        self.builder.get_object("packageInput").set_text(package)
+            
+        main = Configuration.getProjectDefaultMain()
+        if main ==None or main =="None":
+            main = ""
+        if package!="":
+            self.builder.get_object("mainInput").set_text(package+"."+main)
+        else:
+            self.builder.get_object("mainInput").set_text(main)
+            
         self.show_all()
         
     def onCreateProjectButtonClick(self, button):
         destinationFolder = self.builder.get_object("locationInput").get_text()
         projectFolder = self.builder.get_object("nameInput").get_text()
         mainFile = self.builder.get_object("mainInput").get_text()
-        package = self.builder.get_object("packageInput").get_text()
+        #package = self.builder.get_object("packageInput").get_text()
         if destinationFolder != "" and projectFolder != "" and mainFile !="":
             target = "flash"
             if self.builder.get_object("jsCheckBtn").get_active():
@@ -38,7 +52,9 @@ class ProjectFrame(Gtk.Frame):
                 target = "neko"
             elif self.builder.get_object("cppCheckBtn").get_active():
                 target = "cpp"
-            self.plugin.createProject(target, destinationFolder, projectFolder, mainFile, package)
+                
+            self.handleCloseAllDocuments()
+            self.plugin.createProject(target, destinationFolder, projectFolder, mainFile, self.builder.get_object("useHxmlCheckBox").get_active(), self.builder.get_object("setRootCheckBox").get_active())
             self.win.destroy()
         else:
             pass
@@ -47,3 +63,7 @@ class ProjectFrame(Gtk.Frame):
         fn = fileChooser.get_filename()
         if fn != None:
             self.builder.get_object("locationInput").set_text(fn)
+
+    def handleCloseAllDocuments(self):
+        if self.builder.get_object("closeTabsCheckBox").get_active():
+            self.plugin.window.close_all_tabs()

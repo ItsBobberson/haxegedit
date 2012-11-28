@@ -44,7 +44,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def do_update_state(self):
         pass
        
-    def createProject(self, target, destinationFolder, folderName, mainName, package):
+    def createProject(self, target, destinationFolder, folderName, mainName, useHxml, setRoot):
         root = destinationFolder + "/" + folderName
         hxml = destinationFolder + "/" + folderName + "/" + "build.hxml"
         main = destinationFolder + "/" + folderName + "/" + "src" +"/" + mainName.replace(".", "/")+".hx"
@@ -55,8 +55,10 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         if proc.returncode == 0:
             self.openFile(hxml, True)
             self.openFile(main, True)
-            self.setFileBrowserRoot(root)
-            self.setHxml(hxml)
+            if setRoot:
+                self.setFileBrowserRoot(root)
+            if useHxml:
+                self.setHxml(hxml)
         else:
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.outputPanel.activate()
@@ -99,7 +101,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             
     def openFile(self, filePath, jumpTo):
         if not os.path.isfile(filePath):
-            msg = "haxeide.py : 119 : not os.path.isfile(filePath) : " + filePath
+            msg = "haxeide.py : 1O4 : not os.path.isfile(filePath) : " + filePath
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.outputPanel.activate()
             self.outputPanel.setText(msg)
@@ -139,7 +141,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         
     def setHxml(self, hxml):
         Configuration.setHxml(hxml)
-        #self.toolBar.setHxml(hxml)
         
     def saveAndBuild(self):
         self.outputPanel.activate()
@@ -181,17 +182,20 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.outputPanel.setText("Building done.\n")
             if Configuration.getAutoHideConsole():
                 bottom_panel.set_property("visible", False)
-            self.runApplication(hxml)
+            if Configuration.getPlayAfterBuild():
+                self.runApplication(hxml)
         self.busy = False
         
     def runApplication(self, hxml):
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        if not os.path.isfile(os.path.dirname(hxml)+"/run.sh"):
+        runFile = Configuration.getRunFile()
+        if runFile=="" and not os.path.isfile(os.path.dirname(hxml)+"/" + runFile):
+            bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
             bottom_panel.set_property("visible", True)
             self.outputPanel.activate()
-            self.outputPanel.appendText("Can't find " + os.path.dirname(hxml)+"/run.sh to test.\n")
+            self.outputPanel.appendText("No post compilation run file found: " + os.path.dirname(hxml) + "/" + runFile + "\n")
             return
-        os.system("cd " +os.path.dirname(hxml)+";sh run.sh &")
+        else:
+            os.system("cd " +os.path.dirname(hxml)+";sh " + runFile +"&")
         """
         p = os.popen("cd " +os.path.dirname(hxml)+";sh run.sh &","r")
         bottom_panel.set_property("visible", True)
