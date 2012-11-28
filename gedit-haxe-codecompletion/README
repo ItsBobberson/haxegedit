@@ -16,7 +16,7 @@ for user:
 1)copy: haxecodecompletion.plugin and haxecodecompletion to: ~/.local/share/gedit/plugins/
 2)
 
-for user (As root):
+for user (As root!):
 1)copy: org.gnome.gedit.plugins.haxecodecompletion.gschema.xml to: /usr/share/glib-2.0/schemas/
 2)run: sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
 

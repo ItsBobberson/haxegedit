@@ -225,9 +225,12 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         # Get the original position of the Window
         root_x, root_y = self.window.get_position()
         # Create the popup
+        """
         if self.w == None:
             self.w = CompletionWindow(self.window, self)
         popup = self.w
+        """
+        popup = CompletionWindow(self.window, self)
         # Set its font accordingly
         context = view.get_pango_context()
         font_desc = context.get_font_description()

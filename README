@@ -1,0 +1,7 @@
+You need to run the install as root!
+The install script needs access to /usr/share/glib-2.0/schemas for the settings file 
+(this will change in the future)
+
+Install command:
+sudo install-all
+
