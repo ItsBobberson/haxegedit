@@ -3,7 +3,6 @@ from OutputPanel import OutputPanel
 from DebuggerPanel import DebuggerPanel
 from DebuggerInfoPanel import DebuggerInfoPanel
 from ConfigurationWindow import ConfigurationWindow
-#from SidePanel import SidePanel
 from SettingsFrame import SettingsFrame
 from ToolBar import ToolBar
 import Configuration
@@ -23,8 +22,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def do_activate(self):
         self.dataDir = self.plugin_info.get_data_dir()
         self.toolBar = ToolBar(self)
-        #self.sidePanel = SidePanel(self)
-        
         self.outputPanel = OutputPanel(self)
         self.debuggerInfoPanel = DebuggerInfoPanel(self)
         self.debuggerPanel = DebuggerPanel(self)
@@ -35,7 +32,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         
     def do_deactivate(self):
         self.toolBar.remove()
-        #self.sidePanel.remove()
         self.debuggerInfoPanel.remove()
         self.outputPanel.remove()
         self.debuggerPanel.remove()
@@ -52,7 +48,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         root = destinationFolder + "/" + folderName
         hxml = destinationFolder + "/" + folderName + "/" + "build.hxml"
         main = destinationFolder + "/" + folderName + "/" + "src" +"/" + mainName.replace(".", "/")+".hx"
-    
         cwd = self.plugin_info.get_data_dir() + "/" + "scripts"
         command = ["./createproject.sh", target, destinationFolder, folderName, mainName]
         proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
@@ -73,7 +68,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.setFileBrowserRoot(os.path.dirname(hxml))
         if useHxml:
             Configuration.setHxml(hxml)
-            self.toolBar.setHxml(hxml)
+            #self.toolBar.setHxml(hxml)
         
     def saveSession(self):
         hxml = self.sf(Configuration.getHxml())
@@ -94,8 +89,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.setFileBrowserRoot(os.path.dirname(hxml))
         if useHxml:
             Configuration.setHxml(hxml)
-            self.toolBar.setHxml(hxml)
-            
+            #self.toolBar.setHxml(hxml)
         sessionsHash = Configuration.getSessions()
         files = []
         if hxml in sessionsHash:
@@ -104,9 +98,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.openFile(i, False)
             
     def openFile(self, filePath, jumpTo):
-        #print filePath
-        #print os.path.exists(filePath)
-        #print os.path.isfile(filePath)
         if not os.path.isfile(filePath):
             msg = "haxeide.py : 119 : not os.path.isfile(filePath) : " + filePath
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
@@ -114,11 +105,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.outputPanel.setText(msg)
             print msg
             return
-            
-        uri = "file://" + filePath
-        #Gio.file_new_for_path(os.path.expanduser('~')
         #gio_file = Gio.file_new_for_path(filePath)
-        gio_file = Gio.file_new_for_uri(uri)
+        gio_file = Gio.file_new_for_uri("file://" + filePath)
         tab = self.window.get_tab_from_location(gio_file)
         if tab == None:
             tab = self.window.create_tab_from_location( gio_file, None, 0, 0, False, False )
@@ -151,7 +139,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         
     def setHxml(self, hxml):
         Configuration.setHxml(hxml)
-        self.toolBar.setHxml(hxml)
+        #self.toolBar.setHxml(hxml)
         
     def saveAndBuild(self):
         self.outputPanel.activate()
@@ -180,27 +168,20 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             return
         self.busy = True
         hxml = self.sf(Configuration.getHxml())
-
         command = ["haxe", hxml]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.dirname(hxml))
         out = proc.communicate()
-        
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        
         if proc.returncode != 0:
             bottom_panel.set_property("visible", True)
             self.outputPanel.activate()
             self.outputPanel.setText(out[1])
-            
         else:
             self.outputPanel.activate()
             self.outputPanel.setText("Building done.\n")
-            
             if Configuration.getAutoHideConsole():
                 bottom_panel.set_property("visible", False)
-            
             self.runApplication(hxml)
-            
         self.busy = False
         
     def runApplication(self, hxml):
@@ -209,8 +190,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.outputPanel.activate()
             self.outputPanel.appendText("Can't find " + os.path.dirname(hxml)+"/run.sh to test.\n")
-            return 
-        
+            return
         os.system("cd " +os.path.dirname(hxml)+";sh run.sh &")
         """
         p = os.popen("cd " +os.path.dirname(hxml)+";sh run.sh &","r")
@@ -232,7 +212,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 
         #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
         """ 
-        
     def readUntilFDB(self, proc, output):
         result = ""
         seqPromt = ["(","f","d","b",")"]
@@ -256,8 +235,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 tempstr = ""
         proc.stdout.flush()
         return result
-        
-        
+
     def sendDebugInfoCommand(self, cmd):
         try:
             self.proc
@@ -294,8 +272,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         elif cmd=="kill":
             self.proc.stdin.write("y\n")
             self.proc.stdin.flush()
-            self.debuggerPanel.appendText(">>>y\n")
-            
+            self.debuggerPanel.appendText(">>>y\n")  
         elif cmd == "quit" or cmd=="kill":
             self.proc.stdin.write("y\n")
             self.proc.stdin.flush()
@@ -307,54 +284,19 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def debug(self, swf):
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
         bottom_panel.set_property("visible", True)
-        
         side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
-        side_panel.set_property("visible", True)
-            
+        side_panel.set_property("visible", True)   
         self.debuggerPanel.activate()
-        
         command = ["fdb"]
         #cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
         cwd=os.path.dirname(self.sf(Configuration.getHxml()))
+        
         self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         self.readUntilFDB(self.proc,True)
 
-        #self.proc.stdin.write("run index.swf\n")
         self.proc.stdin.write("run "+swf+"\n")
         self.proc.stdin.flush()
         self.readUntilFDB(self.proc, True)
-        
-        #1
-        #Adobe fdb (Flash Player Debugger) [build 23201]
-        #Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
-        #(fdb) 
-        
-        #2
-        #Attempting to launch and connect to Player using URL
-        #index.swf
-        #Player connected; session starting.
-        #Set breakpoints and then type 'continue' to resume the session.
-        #[SWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf - 7,332 bytes after decompression
-        #(fdb)
-        
-        """
-        (fdb) Generic command for showing things about the program being debugged.
-        List of info subcommands:
-        info arguments (i a)    Argument variables of current stack frame
-        info breakpoints (i b)  Status of user-settable breakpoints
-        info display (i d)      Display list of auto-display expressions
-        info files (i f)        Names of targets and files being debugged
-        info functions (i fu)   All function names
-        info handle (i h)       How to handle a fault
-        info locals (i l)       Local variables of current stack frame
-        info scopechain (i sc)  Scope chain of current stack frame
-        info sources (i so)     Source files in the program
-        info stack (i s)        Backtrace of the stack
-        info swfs (i sw)        List of swfs in this session
-        info targets(i t)       Application being debugged
-        info variables (i v)    All global and static variable names
-        Type 'help info' followed by info subcommand name for full documentation.
-        """
 
     def on_view_key_press_event(self, view, event):
         """
@@ -393,11 +335,3 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         if path[1]=="/":
             return path[1:]
         return path
-        
-            
-                
-        
-        
-    
-
-        

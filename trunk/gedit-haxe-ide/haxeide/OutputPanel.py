@@ -13,11 +13,6 @@ class OutputPanel(GObject.Object, Gedit.WindowActivatable):
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
         
-        #self.builder.add_from_file(os.path.join(self.dataDir, "ui", "BottomPanel.glade"))
-        #self.ui = Gtk.Builder()
-        #self.ui.add_from_file(os.path.join(self.dataDir, "ui", "BottomPanel.ui"))
-        #print self["scrolledWindow"]
-        
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.dataDir + "/" + "ui" + "/" + "OutputWindow.glade")
         self.builder.connect_signals(self)
@@ -50,12 +45,6 @@ class OutputPanel(GObject.Object, Gedit.WindowActivatable):
         textBuffer.insert(textBuffer.get_end_iter(), txt)
         self.textView.scroll_mark_onscreen(textBuffer.get_insert())
         #self.textView.scroll_to_mark(textBuffer.get_insert(), 0)    
-    """
-    def onConsoleButtonClick(self, button):
-        txt = self.builder.get_object("consoleInput").get_text()
-        self.builder.get_object("consoleInput").set_text("")
-        self.plugin.sendDebugCommand(txt)
-    """    
         
     def onTextViewClick(self, textView, event):
         if event.type == Gdk.EventType._2BUTTON_PRESS:
@@ -188,6 +177,3 @@ class OutputPanel(GObject.Object, Gedit.WindowActivatable):
         error = unicode (doc.get_text (characterRangeEnd, errorEnd, include_hidden_chars=True))
         
         return {'errorLine':currentLine, 'fileLocation':fileLocation, 'lineNumber':lineNumber, 'characterRange':characterRange, 'error':error}
-            
-    
-       

@@ -47,8 +47,7 @@ class ConfigurationDialog():
         titleBox.set_halign(Gtk.Align.CENTER)
         titleBox.pack_start(Gtk.Image.new_from_file("haxe_logo_32.png"), expand=True, fill=True, padding=0)
         titleBox.pack_start(l, expand=True, fill=True, padding=0)
-        
-        
+
         # Select hxml file box
         self.hxmlfolderLabel = Gtk.Label("-swf-version 9 -swf /tmp/void.swf")
 

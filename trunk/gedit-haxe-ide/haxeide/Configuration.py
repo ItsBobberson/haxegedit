@@ -45,14 +45,18 @@ KEY = "key"
 
 HXML_FILE = None
 HAXE_EXEC_PATH = "haxe"
-
+   
 __settings = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
+
 __keybindingComplete = ""
 __keybindingCompleteTuple = {}
 
 __keybindingBuild = ""
 __keybindingBuildTuple = {}
 
+def settings():
+    return __settings
+    
 def setProjectsLocation(path):
     __settings.set_string(GCONF_PROJECTS_LOCATION, path)
 
@@ -76,20 +80,16 @@ def setDotComplete(dot):
     __settings.set_boolean(GCONF_DOT_COMPLETE, dot)
 
 def getAutoHideConsole():
-    #return True
     return __settings.get_boolean(GCONF_DOT_AUTO_HIDE_CONSOLE)
     
 def setAutoHideConsole(flag):
     __settings.set_boolean(GCONF_DOT_AUTO_HIDE_CONSOLE, flag)
-    #pass   
      
 def getAutoHideSidePanel():
-    #return True 
     return __settings.get_boolean(GCONF_DOT_AUTO_HIDE_SIDE_PANEL)
 
 def setAutoHideSidePanel(flag):
     __settings.set_boolean(GCONF_DOT_AUTO_HIDE_SIDE_PANEL, flag)
-    #pass
     
 def getKeybindingComplete():
     global __keybindingComplete
@@ -100,7 +100,6 @@ def getKeybindingComplete():
             __keybindingComplete = DEFAULT_KEYBINDING_COMPLETE
         else:
             __keybindingComplete = keybinding
-    
     return __keybindingComplete
     
 def getKeybindingBuild():
@@ -112,14 +111,12 @@ def getKeybindingBuild():
             __keybindingBuild = DEFAULT_KEYBINDING_BUILD
         else:
             __keybindingBuild = keybinding
-    
     return __keybindingBuild
     
 def getKeybindingCompleteTuple():
     global __keybindingCompleteTuple
     if len(__keybindingCompleteTuple) != 0:
         return __keybindingCompleteTuple
-
     alt = False
     ctrl = False
     shift = False
@@ -131,7 +128,6 @@ def getKeybindingCompleteTuple():
         MODIFIER_SHIFT : False,
         KEY : ""
     }
-    
     for s in keybinding:
         s = s.lower()
         if s == MODIFIER_ALT:
@@ -142,16 +138,13 @@ def getKeybindingCompleteTuple():
             keybindingTuple[MODIFIER_SHIFT] = True
         else:
             keybindingTuple[KEY] = s 
-    
     __keybindingCompleteTuple = keybindingTuple
-    
     return __keybindingCompleteTuple
 
 def getKeybindingBuildTuple():
     global __keybindingBuildTuple
     if len(__keybindingBuildTuple) != 0:
         return __keybindingBuildTuple
-
     alt = False
     ctrl = False
     shift = False
@@ -163,7 +156,6 @@ def getKeybindingBuildTuple():
         MODIFIER_SHIFT : False,
         KEY : ""
     }
-    
     for s in keybinding:
         s = s.lower()
         if s == MODIFIER_ALT:
@@ -174,9 +166,7 @@ def getKeybindingBuildTuple():
             keybindingTuple[MODIFIER_SHIFT] = True
         else:
             keybindingTuple[KEY] = s 
-    
     __keybindingBuildTuple = keybindingTuple
-    
     return __keybindingBuildTuple
     
 def setKeybindingComplete(keybinding):
@@ -195,7 +185,7 @@ def setKeybindingBuild(keybinding):
 
 def getHxmlFile():
     global HXML_FILE
-    return getHxml()#HXML_FILE
+    return getHxml()
 	
 def setHxmlFile(newFile):
     global HXML_FILE
@@ -223,13 +213,11 @@ def getSessions():
     sessionsTxt = __settings.get_string(GCONF_SESSIONS)
     if sessionsTxt == "" or sessionsTxt == None or sessionsTxt == "None":
         return {}
-        
     sessionsList = sessionsTxt.split("[session]")
     new_sessionsList = []
     for i in sessionsList:
         if i !="":
             new_sessionsList.append(i)
-            
     sessionsHash = {}
     for i in new_sessionsList:
         fileList = i.split('\n')
@@ -240,8 +228,7 @@ def getSessions():
         if len(new_fileList) != 0:
             sessionsHash[new_fileList[0]] = new_fileList
     return sessionsHash
-    
-    
+"""
 if __name__ == "__main__":
     __settings.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)
     print "Old keybindging was:", getKeybindingComplete()
@@ -252,3 +239,4 @@ if __name__ == "__main__":
     print "New keybinding is:", getKeybindingComplete()
     print "New keybinding tuple is:", getKeybindingCompleteTuple()
     HXML_FILE = None
+"""

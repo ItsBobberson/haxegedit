@@ -1,6 +1,5 @@
 from gi.repository import GObject, Gtk, Gdk, Gedit
 import string
-#from SettingsFrame import SettingsFrame
 import Configuration
 
 class ProjectFrame(Gtk.Frame):

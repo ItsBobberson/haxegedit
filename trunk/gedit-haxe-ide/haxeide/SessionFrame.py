@@ -23,17 +23,13 @@ class SessionFrame(Gtk.Frame):
         uri = Configuration.getProjectsLocation()
         if uri !=None and uri!="":
             self.builder.get_object("filechooser").set_current_folder_uri(uri)
-            
         filter = Gtk.FileFilter()
         filter.set_name("*.hxml")
         filter.add_pattern("*.hxml")
         filter.add_pattern("*.nmml")
         self.builder.get_object("filechooser").add_filter(filter)
-        
-        treeView = self.builder.get_object("treeView").append_column(Gtk.TreeViewColumn("Sessions", Gtk.CellRendererText(), text=0))
-
+        self.builder.get_object("treeView").append_column(Gtk.TreeViewColumn("Sessions", Gtk.CellRendererText(), text=0))
         self.getSessions()
-        
         self.show_all()
 
     def onOpenProjectBtnClick(self, button):
@@ -47,10 +43,8 @@ class SessionFrame(Gtk.Frame):
         self.win.destroy()
      
     def onDeleteSessionBtnClick(self, button):
-        #self.sessionsHash.pop(self.hxmlSessionPath)
         del self.sessionsHash[self.hxml]
         Configuration.saveSessions(self.sessionsHash)
-        
         self.getSessions()
              
     def onDeleteSessionFileBtnClick(self, button):
@@ -63,7 +57,6 @@ class SessionFrame(Gtk.Frame):
             self.builder.get_object("locationInput").set_text(fn)
             self.builder.get_object("openProjectBtn").set_sensitive(True)
             self.builder.get_object("openSessionBtn").set_sensitive(self.hxml in self.sessionsHash)
-        
         else:
             self.resetButtons()
                 
@@ -79,7 +72,6 @@ class SessionFrame(Gtk.Frame):
             self.builder.get_object("deleteSessionBtn").set_sensitive(True)
             self.builder.get_object("openProjectBtn").set_sensitive(True)
             self.builder.get_object("openSessionBtn").set_sensitive(True)
-            
         else:
             self.resetButtons()
             
@@ -90,7 +82,7 @@ class SessionFrame(Gtk.Frame):
         self.builder.get_object("openProjectBtn").set_sensitive(False)
         
     def getSessions(self): 
-        listStore = Gtk.ListStore(str) #, list) #Gio.Icon, str, GObject.Object, Gio.FileType)
+        listStore = Gtk.ListStore(str)
         self.sessionsHash = Configuration.getSessions()
         for key in self.sessionsHash:
             listStore.append([key])
