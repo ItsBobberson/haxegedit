@@ -25,7 +25,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.bottomPanel = BottomPanel(self)
         self.handlerId = self.window.connect("key-press-event", self.on_view_key_press_event)
         
-    def showProjectWindow(self):
+    def showHaxeWindow(self):
         ConfigurationWindow(self)  
         
     def do_deactivate(self):
@@ -40,37 +40,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         
     def do_update_state(self):
         pass
-             
-    def on_view_key_press_event(self, view, event):
-        """
-        #build on key press (blocks)
-        doc = self.window.get_active_document()
-        try:
-            if not doc.get_uri_for_display().endswith ('hx'):
-                return
-        except:
-            return
-        if doc.is_untouched():
-            return
-        Gedit.commands_save_document(self.window, doc)
-        self.build()
-        """
-        #print "view event.keyval %s" % event.keyval
-        if self.toolBar.buildButton.get_sensitive() :
-            keybinding = Configuration.getKeybindingBuildTuple()
-            ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
-            alt_pressed = (event.state & Gdk.ModifierType.MOD1_MASK) == Gdk.ModifierType.MOD1_MASK
-            shift_pressed = (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK
-            keyval = Gdk.keyval_from_name(keybinding[Configuration.KEY])
-            # It's only ok if a key is pressed and it's needed or if a key is not pressed if it isn't needed.
-            ctrl_ok = not (keybinding[Configuration.MODIFIER_CTRL] ^ ctrl_pressed )
-            alt_ok =  not (keybinding[Configuration.MODIFIER_ALT] ^ alt_pressed )
-            shift_ok = not (keybinding[Configuration.MODIFIER_SHIFT] ^ shift_pressed )
-            key_ok = (event.keyval == keyval)
-        
-            if ctrl_ok and alt_ok and shift_ok and key_ok:
-                self.saveAndBuild()
-                
+       
     def createProject(self, destinationFolder, folderName, mainName, target):
         cwd = self.plugin_info.get_data_dir() + "/" + "scripts"
         command = ["./createproject.sh", target, destinationFolder, folderName]#, target]
@@ -86,24 +56,42 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.openFile(destinationFolder + "/" + folderName+ "/" + "build.hxml", True)
             self.openFile(destinationFolder + "/" + folderName + "/" + "src" +"/" "Main.hx", True)
             self.setFileBrowserRoot(destinationFolder + "/" + folderName)
+            self.setHxml(destinationFolder + "/" + folderName+ "/" + "build.hxml")
 
-    def openProject(self, hxmlFile ):
-        fileName = os.path.basename(hxmlFile)
-        folderPath =  os.path.dirname(hxmlFile)
-        self.openFile(hxmlFile, True)
-        self.setFileBrowserRoot(folderPath)
-        self.setHxmlFile(hxmlFile)
+    def openProject(self, hxml, useHxml, setRoot ):
+        self.openFile(hxml, True)
+        if setRoot:
+            self.setFileBrowserRoot(os.path.dirname(hxml))
+        if useHxml:
+            Configuration.setHxml(hxml)
+            self.toolBar.setHxml(hxml)
         
-    def openSession(self, hxmlFile ):
-        fileName = os.path.basename(hxmlFile)
-        folderPath =  os.path.dirname(hxmlFile)
-        self.openFile(hxmlFile, False)
-        self.setFileBrowserRoot(folderPath)
+    def saveSession(self):
+        hxml = self.sf(Configuration.getHxml())
+        if hxml == None or hxml == "":
+            return
         sessionsHash = Configuration.getSessions()
-        session = []
-        if hxmlFile in sessionsHash:
-            session = sessionsHash[hxmlFile]
-        for i in session:
+        sessionsHash[hxml] = [hxml]
+        docs = self.window.get_documents()
+        for d in docs:
+            uri = self.sf(d.get_uri_for_display())
+            if uri != hxml:
+                sessionsHash[hxml].append(uri)
+        Configuration.saveSessions(sessionsHash)
+          
+    def openSession(self, hxml, useHxml, setRoot ):
+        self.openFile(hxml, False)
+        if setRoot:
+            self.setFileBrowserRoot(os.path.dirname(hxml))
+        if useHxml:
+            Configuration.setHxml(hxml)
+            self.toolBar.setHxml(hxml)
+            
+        sessionsHash = Configuration.getSessions()
+        files = []
+        if hxml in sessionsHash:
+            files = sessionsHash[hxml]
+        for i in files:
             self.openFile(i, False)
             
     def openFile(self, filePath, jumpTo):
@@ -140,22 +128,19 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
             #print relies on the file browser plugin
-
-    def setHxmlFile(self, hxmlPath):
-        Configuration.setHxml(hxmlPath)
-        self.toolBar.setHxml(hxmlPath)
-        
-    def setHxml(self):
+   
+    def setActiveDocAsHxml(self):
         doc = self.window.get_active_document()
-        self.hxmlPath = doc.get_uri_for_display()
-        hxmlName = doc.get_short_name_for_display()
+        hxml = doc.get_uri_for_display()
+        self.setHxml(hxml)
         
-        buf = self.window.get_active_view().get_buffer()
-        hxmlText = unicode (buf.get_text (*buf.get_bounds (),include_hidden_chars=True), 'utf-8')
-
-        Configuration.setHxml(self.hxmlPath)
-        #self.sidePanel.setHxml(self.hxmlPath, hxmlName, hxmlText)
-        self.toolBar.setHxml(self.hxmlPath)
+    def setHxml(self, hxml):
+        Configuration.setHxml(hxml)
+        self.toolBar.setHxml(hxml)
+        
+        #buf = self.window.get_active_view().get_buffer()
+        #hxmlText = unicode (buf.get_text (*buf.get_bounds (),include_hidden_chars=True), 'utf-8')
+        #self.sidePanel.setHxml(hxml)
         
     def saveAndBuild(self):
         self.bottomPanel.setText("")
@@ -182,8 +167,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         if self.busy:
             return
         self.busy = True
-        command = ["haxe", self.hxmlPath]
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.dirname(self.hxmlPath))
+        hxml = self.sf(Configuration.getHxml())
+        command = ["haxe", hxml]
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.dirname(hxml))
         out = proc.communicate()
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
         try:
@@ -197,20 +183,37 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(e)
         self.busy = False
-            
-    def saveSession(self):
-        hxmlPath = self.sf(Configuration.getHxmlFile())
-        if hxmlPath == None or hxmlPath == "":
-            return
-        sessionsHash = Configuration.getSessions()
-        sessionsHash[hxmlPath] = [hxmlPath]
-        docs = self.window.get_documents()
-        for d in docs:
-            uri = self.sf(d.get_uri_for_display())
-            if uri != hxmlPath:
-                sessionsHash[hxmlPath].append(uri)
-        Configuration.saveSessions(sessionsHash)
         
+    def on_view_key_press_event(self, view, event):
+        """
+        #build on key press (blocks)
+        doc = self.window.get_active_document()
+        try:
+            if not doc.get_uri_for_display().endswith ('hx'):
+                return
+        except:
+            return
+        if doc.is_untouched():
+            return
+        Gedit.commands_save_document(self.window, doc)
+        self.build()
+        """
+        #print "view event.keyval %s" % event.keyval
+        if self.toolBar.buildButton.get_sensitive() :
+            keybinding = Configuration.getKeybindingBuildTuple()
+            ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
+            alt_pressed = (event.state & Gdk.ModifierType.MOD1_MASK) == Gdk.ModifierType.MOD1_MASK
+            shift_pressed = (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK
+            keyval = Gdk.keyval_from_name(keybinding[Configuration.KEY])
+            # It's only ok if a key is pressed and it's needed or if a key is not pressed if it isn't needed.
+            ctrl_ok = not (keybinding[Configuration.MODIFIER_CTRL] ^ ctrl_pressed )
+            alt_ok =  not (keybinding[Configuration.MODIFIER_ALT] ^ alt_pressed )
+            shift_ok = not (keybinding[Configuration.MODIFIER_SHIFT] ^ shift_pressed )
+            key_ok = (event.keyval == keyval)
+        
+            if ctrl_ok and alt_ok and shift_ok and key_ok:
+                self.saveAndBuild()
+    #sanitize file
     def sf(self, path):
         if path == None or path=="":
             return path
