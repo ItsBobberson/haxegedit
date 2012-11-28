@@ -23,19 +23,19 @@ fi
 #install a file
 copy_file() 
 {
-	echo "Adding file $1 to $2"
+	echo "Adding file: $1, to: $2"
 	cp "$1" "$2" || exit 1
 }
 
 #install a folder
 copy_folder() 
 {
-	echo "Adding folder $1 to $2"
+	echo "Adding folder: $1, to: $2"
 	cp -r "$1" "$2" || exit 1
 }
 
 # Start installing haxe code completion plugin by copying the files to the correct folders
-echo "\n*** Installing haXe IDE plugin for GEdit 3.x ***\n"
+echo "*** Installing haXe IDE plugin for GEdit 3.x ***"
 
 if [ `whoami` = 'root' ]; then
 	copy_file 'haxeide.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
@@ -50,6 +50,6 @@ else
 	copy_folder 'haxeide' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
 
-echo "\nDone installing.\n"
-echo "\nRestart GEdit to complete the installation.\n"
+echo "Done installing."
+echo "Restart gedit to complete the installation.\n"
 

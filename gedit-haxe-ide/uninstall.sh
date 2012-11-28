@@ -13,7 +13,7 @@ ROOT_ICONS_FOLDER="/usr/share/icons"
 remove_file() 
 {
 	if [ -f $2/$1 ]; then
-		echo "Removing file $1 from $2"
+		echo "Removing file: $1, from: $2"
 		rm $2/$1 || exit 1
 	fi
 }
@@ -21,12 +21,12 @@ remove_file()
 remove_folder() 
 {
 	if [ -d $2/$1 ]; then
-		echo "Removing folder $1 from $2"
+		echo "Removing folder: $1, from: $2"
 		rm -r $2/$1 || exit 1
 	fi
 }
 
-echo "\n*** Uninstalling haXe IDE plugin for gedit 3.x ***\n"
+echo "*** Uninstalling haXe IDE plugin for gedit 3.x ***"
 if [ `whoami` = 'root' ]; then
 	remove_file 'haxeide.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
 	remove_folder 'haxeide' "$ROOT_GEDIT_PLUGINS_FOLDER"
@@ -40,4 +40,4 @@ else
 	remove_folder 'haxeide' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
 
-echo "\nDone uninstalling.\n"
+echo "Done uninstalling.\n"

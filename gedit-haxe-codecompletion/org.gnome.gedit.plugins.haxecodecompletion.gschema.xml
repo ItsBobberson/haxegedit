@@ -1,40 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema path="/org/gnome/gedit/plugins/haxecodecompletion/" id="org.gnome.gedit.plugins.haxecodecompletion" gettext-domain="gedit">
+  
+    <!-- #### configuration for haxe code completion plugin #### -->
     <key type="s" name="keybinding-complete">
       <default>'ctrl+space'</default>
       <summary>Keybinding to complete code</summary>
       <description>Combinations of keys used to complete code</description>
-    </key>
-    <key type="s" name="keybinding-build">
-      <default>'shift+space'</default>
-      <summary>Keybinding to build</summary>
-      <description>Combinations of keys used to invoke the compiler</description>
-    </key>
-    <key type="b" name="dot-complete">
-      <default>true</default>
-      <summary>Complete after typing a dot</summary>
-      <description>Setting for completion after typing a dot</description>
-    </key>
-    <key type="b" name="auto-hide-console">
-      <default>false</default>
-      <summary>Hides the console on successfull build</summary>
-      <description>Hides the console on successfull build</description>
-    </key>
-    <key type="b" name="auto-hide-side-panel">
-      <default>false</default>
-      <summary>Hides the side panel for none haxe projects</summary>
-      <description>Hides the side panel for none haxe projects</description>
     </key>
     <key type="s" name="hxml-uri">
       <default>'None'</default>
       <summary>Path to hxml file used for autocompletion</summary>
       <description>Path to hxml file used for autocompletion</description>
     </key>
+    <key type="b" name="dot-complete">
+      <default>true</default>
+      <summary>Show popup when typing a dot(.)</summary>
+      <description>Show popup when typing a dot(.)</description>
+    </key>
+    <key type="b" name="space-complete">
+      <default>true</default>
+      <summary>Complete with space bar</summary>
+      <description>Complete with space bar</description>
+    </key>
+    <key type="b" name="tab-complete">
+      <default>true</default>
+      <summary>Complete with tab key</summary>
+      <description>Complete with tab key</description>
+    </key>
+    <key type="b" name="enter-complete">
+      <default>true</default>
+      <summary>Complete with enter key</summary>
+      <description>Complete with enter key</description>
+    </key>
+    <key type="b" name="non-alpha-complete">
+      <default>false</default>
+      <summary>Complete with non alpha numeric key</summary>
+      <description>Complete with non alpha numeric key</description>
+    </key>
+    <key type="b" name="double-dot-complete">
+      <default>true</default>
+      <summary>Complete with dot key and relaunch the popup</summary>
+      <description>Complete with dot key and relaunch the popup</description>
+    </key>
+    <key type="b" name="esc-hide-complete">
+      <default>true</default>
+      <summary>Close the popup with the esc key</summary>
+      <description>Close the popup with the esc key</description>
+    </key>
+    <key type="b" name="empty-hide-complete">
+      <default>true</default>
+      <summary>Close the popup when empty after filter</summary>
+      <description>Close the popup when empty after filter</description>
+    </key>
+    
+    <!-- #### configuration for haxe ide plugin #### -->
+    <key type="s" name="keybinding-build">
+      <default>'shift+space'</default>
+      <summary>Keybinding to build</summary>
+      <description>Combination of keys used to invoke the compiler</description>
+    </key>
+    <key type="b" name="auto-hide-console">
+      <default>false</default>
+      <summary>Hide the console on successfull build</summary>
+      <description>Hide the console on successfull build</description>
+    </key>
+    <key type="b" name="auto-hide-side-panel">
+      <default>false</default>
+      <summary>Hide the side panel for none haxe projects</summary>
+      <description>Hide the side panel for none haxe projects</description>
+    </key>
+    
     <key type="s" name="projects-location">
       <default>'None'</default>
-      <summary>Path to default location for haxe projects</summary>
-      <description>Path to default location for haxe projects</description>
+      <summary>Path to default location for new haxe projects</summary>
+      <description>Path to default location for new haxe projects</description>
     </key>
   </schema>
 </schemalist>

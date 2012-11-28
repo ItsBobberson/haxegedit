@@ -2,7 +2,7 @@ import os
 import subprocess
 import re
 import configuration
-
+import string
 from xml.dom.minidom import parseString
 
 re_package = re.compile ("package (?P<packagename>(\w+.)*\w+);")
@@ -38,18 +38,23 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     file = open (fullpath, "w")
     file.write (origdoc)
     file.close ()
+    errorInfoPath=""
+
     if hxmlfile != None:
     	cls = classname
         if package != None:
             cls = package+"."+cls
         command = ["haxe", os.path.basename(hxmlfile), cls, "--display", "%s@%d" % (fullpath[len(basedir)+1:], offset)]
-        #print ("haxe "+os.path.basename(hxmlfile)+" "+cls+" --display %s@%d" % (fullpath[len(basedir)+1:], offset))
-    elif os.path.exists (basedir + "/compile.hxml"):
-        command = ["haxe", basedir + "/compile.hxml", classname , "--display", "%s@%d" % (classname.replace (".", "/") + ".hx", offset)] 
+        errorInfoPath = hxmlfile + "," + cls
+        
+    elif os.path.exists (basedir + "/build.hxml"):
+        command = ["haxe", basedir + "/build.hxml", classname , "--display", "%s@%d" % (classname.replace (".", "/") + ".hx", offset)] 
+        errorInfoPath = basedir + "/build.hxml, " + classname
+    
     else:
-        # TODO This should be parametrable
         command = ["haxe", "-swf-version", "9", "-swf", "/tmp/void.swf", classname, "--display" , "%s@%d" % (classname.replace (".", "/") + ".hx", offset)]
-    #print basedir
+        errorInfoPath = "-swf-version 9 + -swf /tmp/void.swf" + classname
+
     proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=basedir)
     out = proc.communicate ()
 
@@ -75,17 +80,18 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
                 try:
                     dict["type"] = item.getElementsByTagName ('t')[0].childNodes[0].nodeValue
                 except Exception, e:
-                    # print e
                     pass
                 dict["word"] = make_word (dict["abbr"], dict["type"])
                 result.append (dict)
         else:
             result = []
             result.append({"word":"Error: "+str})
-            print str
+            result.append({"word":"Using hxml: "+errorInfoPath})
+              
     except Exception, e:
-        print e
-        print str
+        result = []
+        result.append({"word":"Error: " + e.__str__()})
+        result.append({"word":"Using hxml: "+errorInfoPath})
 
     os.rename (fullpath + ".bak", fullpath)
 
