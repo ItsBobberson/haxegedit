@@ -4,5 +4,6 @@
 -swf-version 10
 -swf-header 800:600:30:EEEEEE
 
---next
--cmd flashplayer ./bin/index.swf
+#code completion breaks when the following lines are uncommented
+#--next
+#-cmd flashplayer ./bin/index.swf

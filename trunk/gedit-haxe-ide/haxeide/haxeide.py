@@ -41,9 +41,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def do_update_state(self):
         pass
        
-    def createProject(self, destinationFolder, folderName, mainName, target):
+    def createProject(self, target, destinationFolder, folderName, package, mainName):
         cwd = self.plugin_info.get_data_dir() + "/" + "scripts"
-        command = ["./createproject.sh", target, destinationFolder, folderName]#, target]
+        command = ["./createproject.sh", target, destinationFolder, folderName, package, mainName]
         proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
         out = proc.communicate ()
         str0 = out[0]
@@ -177,8 +177,10 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 bottom_panel.set_property("visible", True)
                 self.bottomPanel.setText(out[1])
             else:
+                self.bottomPanel.setText("Building done.")
                 if Configuration.getAutoHideConsole():
                     bottom_panel.set_property("visible", False)
+                    
         except Exception, e:
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(e)

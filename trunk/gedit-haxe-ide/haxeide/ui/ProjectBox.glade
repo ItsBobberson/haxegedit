@@ -189,7 +189,6 @@
             <child>
               <object class="GtkEntry" id="mainInput">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="tooltip_text" translatable="yes">This will add -main Main to the hxml file</property>
                 <property name="text" translatable="yes">Main</property>
@@ -230,9 +229,9 @@
             <child>
               <object class="GtkEntry" id="packageInput">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="tooltip_text" translatable="yes">This will create subfolders for the packages</property>
+                <property name="truncate_multiline">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
