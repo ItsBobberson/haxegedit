@@ -23,6 +23,16 @@
       <summary>Complete with space bar</summary>
       <description>Complete with space bar</description>
     </key>
+    <key type="b" name="show-api-info-panel">
+      <default>true</default>
+      <summary>Show api info in bottom panel</summary>
+      <description>Show api info in bottom panel</description>
+    </key>
+    <key type="b" name="auto-hide-api-info-panel">
+      <default>false</default>
+      <summary>Automatically hide the bottom panel with API info</summary>
+      <description>Automatically hide the bottom panel with API info</description>
+    </key>
     <key type="b" name="tab-complete">
       <default>true</default>
       <summary>Complete with tab key</summary>

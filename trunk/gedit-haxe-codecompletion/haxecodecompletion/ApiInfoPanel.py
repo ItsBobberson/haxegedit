@@ -1,5 +1,6 @@
 import os
 from gi.repository import GObject, Gtk, Gdk, Gedit, Gio, GLib
+import configuration
 import string
 
 class ApiInfoPanel(GObject.Object, Gedit.WindowActivatable):
@@ -25,15 +26,18 @@ class ApiInfoPanel(GObject.Object, Gedit.WindowActivatable):
         self.textView.modify_bg(Gtk.StateType.SELECTED, Gdk.Color(red=51776, green=0, blue=0))
         #self.textView.connect("button-press-event", self.onTextViewClick)
 
-        self.geditBottomPanel = self.geditWindow.get_bottom_panel()
-        self.geditBottomPanel.add_item(self.scrolledWindow, "haxe_api_info_panel", "api info", Gtk.Image.new_from_file(self.dataDir + "/" + "icons" + "/" + "haxe_logo_16.png"))# Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
-        self.geditBottomPanel.activate_item(self.scrolledWindow)
+        if configuration.getShowApiInfoPanel():
+            self.geditBottomPanel = self.geditWindow.get_bottom_panel() 
+            self.geditBottomPanel.add_item(self.scrolledWindow, "haxe_api_info_panel", "api info", Gtk.Image.new_from_file(self.dataDir + "/" + "icons" + "/" + "haxe_logo_16.png"))# Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
+            self.geditBottomPanel.activate_item(self.scrolledWindow)
         
     def activate(self):
-        self.geditBottomPanel.activate_item(self.scrolledWindow)
+        if configuration.getShowApiInfoPanel():
+            self.geditBottomPanel.activate_item(self.scrolledWindow)
         
     def remove(self):
-        self.geditBottomPanel.remove_item(self.scrolledWindow)
+        if configuration.getShowApiInfoPanel():
+            self.geditBottomPanel.remove_item(self.scrolledWindow)
     
     def setText(self, txt):
         textBuffer = self.textView.get_buffer()

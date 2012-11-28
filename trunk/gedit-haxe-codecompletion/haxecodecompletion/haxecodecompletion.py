@@ -78,7 +78,8 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         
     def do_deactivate(self):
         """Deactivate plugin."""
-        self.apiInfoPanel.remove()
+        if configuration.getShowApiInfoPanel():
+            self.apiInfoPanel.remove()
         widgets = [self.window]
         widgets.append(self.window.get_views())
         widgets.append(self.window.get_documents())

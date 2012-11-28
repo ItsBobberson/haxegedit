@@ -147,6 +147,22 @@ def getSpaceComplete():
     return __settings.get_boolean("space-complete")
 def setSpaceComplete(v):
     __settings.set_boolean("space-complete",v)
+    
+"""
+show-api-info-panel
+"""    
+def getShowApiInfoPanel():
+    return __settings.get_boolean("show-api-info-panel")
+def setShowApiInfoPanel(v):
+    __settings.set_boolean("show-api-info-panel",v)
+
+"""
+auto-hide-api-info-panel
+"""    
+def getAutoHideApiInfoPanel():
+    return __settings.get_boolean("auto-hide-api-info-panel")
+def setAutoHideApiInfoPanel(v):
+    __settings.set_boolean("auto-hide-api-info-panel",v)
 
 """
 tab-complete
