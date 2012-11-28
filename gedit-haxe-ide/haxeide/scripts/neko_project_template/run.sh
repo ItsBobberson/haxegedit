@@ -1,3 +1,5 @@
 #! /usr/bin/env bash
 
-neko ./bin/application.n 13 17
+echo 'neko application.n 13 17'
+
+gnome-terminal --command="neko ./bin/application.n 13 17"
