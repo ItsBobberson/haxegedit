@@ -3,3 +3,6 @@
 -swf ./bin/index.swf
 -swf-version 10
 -swf-header 800:600:30:EEEEEE
+
+--next
+-cmd flashplayer ./bin/index.swf

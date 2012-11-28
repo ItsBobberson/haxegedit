@@ -74,7 +74,7 @@ class CompletionWindow(Gtk.Window):
         self.current_completions = []
         self.completions = None
 
-        #self.grab_focus()
+        self.grab_focus()
 
 
     ################### USEFUL CODE GOES BEYOND THAT LINE ######################
@@ -122,11 +122,11 @@ class CompletionWindow(Gtk.Window):
         ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
         # Escape
         if event.keyval == Gdk.KEY_Escape and configuration.getEscHideComplete():
-            self.destroy ()
+            self.remove()
         # Backspace
         elif event.keyval == Gdk.KEY_BackSpace:
             if self.tempstr == "":
-                self.destroy ()
+                self.remove()
             else:
                 if not ctrl_pressed:
                     self.temp_remove ()
@@ -138,14 +138,14 @@ class CompletionWindow(Gtk.Window):
                 self.complete()
             else:
                 self.insert('\t')
-                self.destroy()
+                self.remove()
             
         # Return
         elif event.keyval == Gdk.KEY_Return:
             if configuration.getEnterComplete():
                 self.complete()
             else:
-                self.destroy()
+                self.remove()
             
         # Space
         elif event.keyval == Gdk.KEY_space:
@@ -154,7 +154,7 @@ class CompletionWindow(Gtk.Window):
                     self.insert(" ")
             else:
                 self.insert(" ")
-                self.destroy()
+                self.remove()
         # Dot
         # It completes the word, and launches the completion again for the next word.
         elif event.keyval == Gdk.KEY_period:
@@ -164,7 +164,7 @@ class CompletionWindow(Gtk.Window):
                     self.gedit_window.get_active_document ().insert_at_cursor (event.string)
             else:
                 self.insert(".")
-                self.destroy()
+                self.remove()
                 
         # everything else !
         else:
@@ -173,7 +173,7 @@ class CompletionWindow(Gtk.Window):
                     if configuration.getNonAlphaComplete():
                         self.complete()
                         self.insert(event.string)
-                        self.destroy()
+                        self.remove()
                     else:
                         self.temp_add (event.string)
                 else:
@@ -187,13 +187,20 @@ class CompletionWindow(Gtk.Window):
 
             self.insert (completion)
             if hide:
-                self.destroy ()
+                self.remove()
             return True
         except:
             return False
-
+            
+    def remove(self):
+        self.completions = None
+        self.current_completions = []
+        self.tempstr = ""
+        #self.destroy()
+        self.hide()
+        
     def focus_out_event(self, *args):
-        self.destroy ()
+        self.remove()
     
     def get_selected(self):
         """Get the selected row."""
@@ -245,7 +252,7 @@ class CompletionWindow(Gtk.Window):
         else:
             #print "len (self.current_completions) %s" % len (self.current_completions)
             if configuration.getEmptyHideComplete():
-                self.destroy ()
+                self.remove()
 
     def set_font_description(self, font_desc):
         """Set the label's font description."""
