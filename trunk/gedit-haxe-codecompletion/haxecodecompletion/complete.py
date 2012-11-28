@@ -103,6 +103,10 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
                         dict["type"] = item.getElementsByTagName ('t')[0].childNodes[0].nodeValue
                     except Exception, e:
                         pass
+                    try:
+                        dict["info"] = item.getElementsByTagName ('d')[0].childNodes[0].nodeValue
+                    except Exception, e:
+                        pass
                     dict["word"] = make_word (dict["abbr"], dict["type"])
                     result.append (dict)
         else:

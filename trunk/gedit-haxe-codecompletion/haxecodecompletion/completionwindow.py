@@ -18,6 +18,7 @@ class CompletionWindow(Gtk.Window):
         self.connect('focus-out-event', self.focus_out_event) 
         self.connect('key-press-event', self.key_press_event)
         
+        self.apiInfoPanel = None
         self.gedit_window = parent
         self.plugin = plugin
         self.tempstr = ""
@@ -217,13 +218,26 @@ class CompletionWindow(Gtk.Window):
     def get_selected(self):
         """Get the selected row."""
         selection = self.view.get_selection()
+        if selection == None:
+            return None
         return selection.get_selected_rows()[1][0].get_indices()[0]
 
     def row_selected(self, treeview, data = None):
         selection = self.get_selected ()
-        # TODO Display the documentation if any.
-        # info = self.current_completions[selection] ['info']
-        # self.text_buffer.set_text (info)
+        if selection == None:
+            return
+        dict = self.current_completions[ selection ]
+        apiInfo = ""
+        if 'word' in dict:
+            apiInfo = dict['word'] + "\n"
+        if 'info' in dict:
+            apiInfo = apiInfo + dict['info']
+        
+        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+        bottom_panel.set_property("visible", True)
+        self.apiInfoPanel.activate()
+        self.apiInfoPanel.setText(apiInfo)
+
 
     def row_activated(self, tree, path, view_column, data = None):
         """ The user chose a completion, so terminate it. """
@@ -257,9 +271,10 @@ class CompletionWindow(Gtk.Window):
                 self.store.append([unicode(completion['word'])])
                 self.current_completions.append (completion)
         self.view.columns_autosize()
-
+        
         if len (self.current_completions) > 0:
             self.view.get_selection().select_path(0)
+            self.row_selected(None)
         else:
             #print "len (self.current_completions) %s" % len (self.current_completions)
             if configuration.getEmptyHideComplete():
