@@ -46,11 +46,14 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         self.setVariables()
         #self.setFunctions()
         #self.setScopeChain()
-        
+    
+    #   Stack
+    
     def setStack(self, jumpTo):
         stackTreeView = self.builder.get_object("stackTreeView")
         stackTreeView.set_headers_visible(False)
         stackTreeView.get_selection().connect("changed", self.onStackSelectionChange, stackTreeView)
+        stackTreeView.connect("row-activated", self.onStackSelectionDoubleClick)
         if len(stackTreeView.get_columns()) == 0:
             col = Gtk.TreeViewColumn("info stack", Gtk.CellRendererText(), text=0)
             col.set_resizable (True) 
@@ -59,12 +62,12 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         lines = result.split("\n")
         ls = Gtk.ListStore(str, str)
         for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                parts = line.split(" at ")
+            parts = line.split(" at ")
+            if len(parts) != 1:
                 ls.append([parts[-1], line])
         stackTreeView.set_model(ls)
         if jumpTo and len(ls)!=0:
-            info = self.parseStackLineInfo(ls[0][1])
+            info = self.parseStackLineInfo(ls[0][1], True)
             self.jumpToSourceLine(info)
         
     def onStackSelectionChange (self, selection, tree):
@@ -72,9 +75,168 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
         if len(rows)==0:
             return
         iter = model.get_iter(rows[0])
-        info = self.parseStackLineInfo(model[iter][1])
+        line = model[iter][1]
+        info = self.parseStackLineInfo(line, True)
         self.jumpToSourceLine(info)
+        
+    def onStackSelectionDoubleClick(self, tree, iter, path):
+        model = tree.get_model()
+        line = model[iter][1]
+        info = self.parseStackLineInfo(line, False)
+        self.jumpToSourceLine(info)
+        
+           
+    #   BreakPoints
     
+    def setBreakPoints(self):    
+        breakPointsTreeView = self.builder.get_object("breakPointsTreeView")
+        breakPointsTreeView.get_selection().connect("changed", self.onBreakPointSelectionChange, breakPointsTreeView)
+        breakPointsTreeView.connect("row-activated", self.onBreakPointSelectionDoubleClick)
+        breakPointsTreeView.set_headers_visible(False)
+        if len(breakPointsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            breakPointsTreeView.append_column(col)
+        result = self.debugger.sendDebugInfoCommand("info breakpoints")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            parts = line.split(" at ")
+            if len(parts) != 1:
+                ls.append([parts[-1], line])
+        breakPointsTreeView.set_model(ls)
+        
+    def onBreakPointSelectionChange(self, selection, tree):
+        model, tree_iter = selection.get_selected()
+        if tree_iter != None:
+            line = model[tree_iter][1]
+            info = self.parseStackLineInfo(line, True)
+            self.jumpToSourceLine(info)
+          
+    def onBreakPointSelectionDoubleClick(self, tree, iter, path):
+        model = tree.get_model()
+        line = model[iter][1]
+        info = self.parseStackLineInfo(line, False)
+        self.jumpToSourceLine(info)
+              
+                
+    #   Files
+        
+    def setFiles(self):
+        filesTreeView = self.builder.get_object("filesTreeView")
+        filesTreeView.set_headers_visible(False)
+        if len(filesTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("file", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            filesTreeView.append_column(col)
+        result = self.debugger.sendDebugInfoCommand("info files")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str)
+        for line in lines:
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
+                ls.append([line])       
+        filesTreeView.set_model(ls)
+    
+    
+    #   Locals
+        
+    def setLocals(self):
+        localsTreeView = self.builder.get_object("localsTreeView")
+        localsTreeView.set_headers_visible(False)
+        if len(localsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            localsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            localsTreeView.append_column(col)  
+        result = self.debugger.sendDebugInfoCommand("info locals")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        localsTreeView.set_model(ls)
+    
+    
+    #   Variabls
+        
+    def setVariables(self):
+        varsTreeView = self.builder.get_object("varsTreeView")
+        varsTreeView.set_headers_visible(False)
+        if len(varsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            varsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            varsTreeView.append_column(col)
+        result = self.debugger.sendDebugInfoCommand("info variables")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        varsTreeView.set_model(ls)
+    
+    
+    #   Arguments
+            
+    def setArgs(self):
+        argsTreeView = self.builder.get_object("argsTreeView")
+        argsTreeView.set_headers_visible(False)
+        if len(argsTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            argsTreeView.append_column(col)
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            argsTreeView.append_column(col)
+
+        cmd = self.debugger.debugType == 'fdb' if "info arguments" else "info args"
+        result = self.debugger.sendDebugInfoCommand("info args")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
+                parts = line.split(" = ")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        argsTreeView.set_model(ls)
+        
+    
+    # Print this.
+
+    def setThis(self):
+        thisTreeView = self.builder.get_object("thisTreeView")
+        thisTreeView.set_headers_visible(False)
+        if len(thisTreeView.get_columns()) == 0:
+            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
+            col.set_resizable(True)
+            thisTreeView.append_column(col)
+            
+            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
+            col.set_resizable(True)
+            thisTreeView.append_column(col)
+        result = self.debugger.sendDebugInfoCommand("print this.")
+        lines = result.split("\n")
+        ls = Gtk.ListStore(str, str)
+        for line in lines:
+            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
+                parts = line.split(" = ")
+                if len(parts)==3:
+                    self.builder.get_object("thisLabel").set_markup("<b>" + "["+ parts[-1].split(", ")[-1] + "</b>")
+                if len(parts)==2:
+                    ls.append([parts[0], parts[1]])      
+        thisTreeView.set_model(ls)
+    
+    
+    #   helpers
+        
     def jumpToSourceLine(self, info):
         path = info["file"]
         lineNr = int(info["lineNr"])
@@ -92,7 +254,7 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
             buf.place_cursor(i)
             view.scroll_to_cursor()
 
-    def parseStackLineInfo(self, line):
+    def parseStackLineInfo(self, line, mapToHx):
         #line = " #0   this = [Object 3039793441, class='be.haxer::Main'].Main() at Main.hx:9"
         #line = "1  0x0808b2e1 in main (argc=1, argv=0xbffff704) at ./src/__main__.cpp:12"
         parts0 = line.split(" at ")
@@ -153,10 +315,11 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
             if file.endswith(".cpp") or file.endswith(".h"):
                 if os.path.isfile(file):
                     targetFile = file
-                    info = self.findHxCounterPart(searchLocations,targetFile,lineNr)
-                    if info["file"] != "":
-                        targetFile = info["file"]
-                        lineNr = info["lineNr"]
+                    if mapToHx:
+                        info = self.findHxCounterPart(searchLocations,targetFile,lineNr)
+                        if info["file"] != "":
+                            targetFile = info["file"]
+                            lineNr = info["lineNr"]
                     break
             elif path.endswith(".hx"):
                 if os.path.isfile(file):
@@ -187,118 +350,3 @@ class DebuggerInfoPanel(GObject.Object, Gedit.WindowActivatable):
                     break
         return info
         
-    def setFiles(self):
-        filesTreeView = self.builder.get_object("filesTreeView")
-        filesTreeView.set_headers_visible(False)
-        if len(filesTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("file", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            filesTreeView.append_column(col)
-        result = self.debugger.sendDebugInfoCommand("info files")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str)
-        for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                ls.append([line])       
-        filesTreeView.set_model(ls)
-        
-    def setLocals(self):
-        localsTreeView = self.builder.get_object("localsTreeView")
-        localsTreeView.set_headers_visible(False)
-        if len(localsTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            localsTreeView.append_column(col)
-            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
-            col.set_resizable(True)
-            localsTreeView.append_column(col)  
-        result = self.debugger.sendDebugInfoCommand("info locals")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str, str)
-        for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                parts = line.split(" = ")
-                if len(parts)==2:
-                    ls.append([parts[0], parts[1]])      
-        localsTreeView.set_model(ls)
-        
-    def setVariables(self):
-        varsTreeView = self.builder.get_object("varsTreeView")
-        varsTreeView.set_headers_visible(False)
-        if len(varsTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            varsTreeView.append_column(col)
-            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
-            col.set_resizable(True)
-            varsTreeView.append_column(col)
-        result = self.debugger.sendDebugInfoCommand("info variables")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str, str)
-        for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                parts = line.split(" = ")
-                if len(parts)==2:
-                    ls.append([parts[0], parts[1]])      
-        varsTreeView.set_model(ls)
-            
-    def setArgs(self):
-        argsTreeView = self.builder.get_object("argsTreeView")
-        argsTreeView.set_headers_visible(False)
-        if len(argsTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            argsTreeView.append_column(col)
-            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
-            col.set_resizable(True)
-            argsTreeView.append_column(col)
-
-        cmd = self.debugger.debugType == 'fdb' if "info arguments" else "info args"
-        result = self.debugger.sendDebugInfoCommand("info args")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str, str)
-        for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                parts = line.split(" = ")
-                if len(parts)==2:
-                    ls.append([parts[0], parts[1]])      
-        argsTreeView.set_model(ls)
-        
-
-    def setBreakPoints(self):    
-        breakPointsTreeView = self.builder.get_object("breakPointsTreeView")
-        breakPointsTreeView.set_headers_visible(False)
-        if len(breakPointsTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            breakPointsTreeView.append_column(col)
-        result = self.debugger.sendDebugInfoCommand("info breakpoints")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str)
-        for line in lines:
-            if line != '(gdb)' and line != '(fdb)' and not line.startswith("  "):
-                ls.append([line])
-        breakPointsTreeView.set_model(ls)
-        
-    def setThis(self):
-        thisTreeView = self.builder.get_object("thisTreeView")
-        thisTreeView.set_headers_visible(False)
-        if len(thisTreeView.get_columns()) == 0:
-            col = Gtk.TreeViewColumn("key", Gtk.CellRendererText(), text=0)
-            col.set_resizable(True)
-            thisTreeView.append_column(col)
-            
-            col = Gtk.TreeViewColumn("value", Gtk.CellRendererText(), text=1)
-            col.set_resizable(True)
-            thisTreeView.append_column(col)
-        result = self.debugger.sendDebugInfoCommand("print this.")
-        lines = result.split("\n")
-        ls = Gtk.ListStore(str, str)
-        for line in lines:
-            if line != '(fdb)' and line != '(gdb)' and line != ' (gdb)':
-                parts = line.split(" = ")
-                if len(parts)==3:
-                    self.builder.get_object("thisLabel").set_markup("<b>" + "["+ parts[-1].split(", ")[-1] + "</b>")
-                if len(parts)==2:
-                    ls.append([parts[0], parts[1]])      
-        thisTreeView.set_model(ls)
