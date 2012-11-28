@@ -22,7 +22,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         #self.sessionButton = Gtk.ToolButton(stock_id=Gtk.STOCK_YES) 
         #self.sessionButton.set_tooltip_text('Save session')
         #self.sessionButton.connect("clicked", self.saveSession)
-        
+        #print self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png"
         self.projectButton = Gtk.ToolButton(icon_widget=Gtk.Image.new_from_file(self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png"))
         self.projectButton.set_tooltip_text('open haXe project panel')
         self.projectButton.connect("clicked", self.onProjectButtonClick)

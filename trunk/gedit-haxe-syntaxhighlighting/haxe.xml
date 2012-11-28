@@ -1,9 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-   <mime-type type="text/x-haxe">
-     <sub-class-of type="text/plain"/>
-     <comment>Haxe source file</comment>
-     <glob pattern="*.hx"/>
-   </mime-type>
+	<mime-type type="text/x-haxe">
+		<sub-class-of type="text/plain"/>
+		<comment>haXe source code</comment>
+		<comment xml:lang="be">Kryničny kod haXe</comment>
+		<comment xml:lang="be@latin">Kryničny kod haXe</comment>
+		<comment xml:lang="bg">Изходен код — haXe</comment>
+		<comment xml:lang="bs">haXe izvorni kôd</comment>
+		<comment xml:lang="ca">codi font en haXe</comment>
+		<comment xml:lang="cs">Zdrojový kód v haXe</comment>
+		<comment xml:lang="cy">Ffynhonnell Rhaglen haXe</comment>
+		<comment xml:lang="da">haXe-kildekode</comment>
+		<comment xml:lang="de">haXe-Quelltext</comment>
+		<comment xml:lang="el">πηγαίος κώδικας haXe</comment>
+		<comment xml:lang="en_GB">haXe source code</comment>
+		<comment xml:lang="eo">haXe-fontkodo</comment>
+		<comment xml:lang="es">código fuente en haXe</comment>
+		<comment xml:lang="eu">haXe iturburu-kodea</comment>
+		<comment xml:lang="fi">haXe-lähdekoodi</comment>
+		<comment xml:lang="fr">code source haXe</comment>
+		<comment xml:lang="ga">cód foinseach haXe</comment>
+		<comment xml:lang="gl">Código fonte haXe</comment>
+		<comment xml:lang="he">קוד מקור של haXe</comment>
+		<comment xml:lang="hu">haXe-forráskód</comment>
+		<comment xml:lang="id">Kode program haXe</comment>
+		<comment xml:lang="it">Codice sorgente haXe</comment>
+		<comment xml:lang="ja">haXe ソースコード</comment>
+		<comment xml:lang="kk">haXe бастапқы коды</comment>
+		<comment xml:lang="ko">haXe 소스 코드</comment>
+		<comment xml:lang="lt">haXe pradinis kodas</comment>
+		<comment xml:lang="lv">haXe pirmkods</comment>
+		<comment xml:lang="ms">Kod sumber haXe</comment>
+		<comment xml:lang="nb">haXe-kildekode</comment>
+		<comment xml:lang="nl">haXe-broncode</comment>
+		<comment xml:lang="nn">haXe-kjeldekode</comment>
+		<comment xml:lang="no">haXe-kildekode</comment>
+		<comment xml:lang="oc">còde font haXe</comment>
+		<comment xml:lang="pl">Kod źródłowy haXe</comment>
+		<comment xml:lang="pt">código fonte haXe</comment>
+		<comment xml:lang="pt_BR">Código fonte haXe</comment>
+		<comment xml:lang="ro">Cod sursă haXe</comment>
+		<comment xml:lang="ru">исходный код haXe</comment>
+		<comment xml:lang="sk">Zdrojový kód v haXe</comment>
+		<comment xml:lang="sl">Datoteka izvorne kode haXe</comment>
+		<comment xml:lang="sq">Kod burues haXe</comment>
+		<comment xml:lang="sr">haXe изворни ко̂д</comment>
+		<comment xml:lang="sv">haXe-källkod</comment>
+		<comment xml:lang="tr">haXe kaynak kodu</comment>
+		<comment xml:lang="uk">вихідний код мовою haXe</comment>
+		<comment xml:lang="vi">Mã nguồn haXe</comment>
+		<comment xml:lang="zh_CN">haXe 源代码</comment>
+		<comment xml:lang="zh_TW">haXe 源代碼</comment>
+		<glob pattern="*.hx"/>
+	</mime-type>
 </mime-info>
 

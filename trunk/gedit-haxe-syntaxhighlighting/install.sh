@@ -11,6 +11,8 @@ USER_MIME_PACKAGES_FOLDER="$HOME/.local/share/mime/packages"
 LANGSPEC_FILE="haxe.lang"
 MIME_FILE="haxe.xml"
 
+echo "\n*** Installing haXe syntax file for highlighting ***\n"
+
 #create directories for the plugin files
 if [ `whoami` != 'root' ]; then
 
@@ -55,4 +57,4 @@ else
 
 fi
 
-echo "*** Done installing the haXe syntax file for highlighting ***"
+echo "\nDone installing.\n"

@@ -6,7 +6,8 @@ USER_ICONS_FOLDER="$HOME/.local/share/icons"
 
 #root paths
 ROOT_GEDIT_SCHEMAS_FOLDER="/usr/share/glib-2.0/schemas"
-ROOT_GEDIT_PLUGINS_FOLDER="/usr/lib/gedit/plugins"
+ROOT_GEDIT_PLUGINS_DATA_FOLDER="/usr/share/gedit/plugins/haxeide"
+ROOT_GEDIT_PLUGINS_FOLDER="/usr/share/gedit/plugins"
 ROOT_ICONS_FOLDER="/usr/share/icons"
 
 remove_file() 
@@ -25,10 +26,13 @@ remove_folder()
 	fi
 }
 
-echo "\nUninstalling haXe IDE plugin for gedit 3.x\n"
+echo "\n*** Uninstalling haXe IDE plugin for gedit 3.x ***\n"
 if [ `whoami` = 'root' ]; then
 	remove_file 'haxeide.plugin' "$ROOT_GEDIT_PLUGINS_FOLDER"
 	remove_folder 'haxeide' "$ROOT_GEDIT_PLUGINS_FOLDER"
+	remove_folder 'haxeide/ui' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
+	remove_folder 'haxeide/icons' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
+	remove_folder 'haxeide/scripts' "$ROOT_GEDIT_PLUGINS_DATA_FOLDER"
 	echo "Recompiling: glib-compile-schemas"
 	glib-compile-schemas "$ROOT_GEDIT_SCHEMAS_FOLDER"
 else
@@ -36,3 +40,4 @@ else
 	remove_folder 'haxeide' "$USER_GEDIT_PLUGINS_FOLDER"
 fi
 
+echo "\nDone uninstalling.\n"

@@ -2,19 +2,39 @@
 <schemalist>
   <schema path="/org/gnome/gedit/plugins/haxecodecompletion/" id="org.gnome.gedit.plugins.haxecodecompletion" gettext-domain="gedit">
     <key type="s" name="keybinding-complete">
-      <default>'ctrl+alt+space'</default>
+      <default>'ctrl+space'</default>
       <summary>Keybinding to complete code</summary>
       <description>Combinations of keys used to complete code</description>
+    </key>
+    <key type="s" name="keybinding-build">
+      <default>'shift+space'</default>
+      <summary>Keybinding to build</summary>
+      <description>Combinations of keys used to invoke the compiler</description>
     </key>
     <key type="b" name="dot-complete">
       <default>true</default>
       <summary>Complete after typing a dot</summary>
       <description>Setting for completion after typing a dot</description>
     </key>
+    <key type="b" name="auto-hide-console">
+      <default>false</default>
+      <summary>Hides the console on successfull build</summary>
+      <description>Hides the console on successfull build</description>
+    </key>
+    <key type="b" name="auto-hide-side-panel">
+      <default>false</default>
+      <summary>Hides the side panel for none haxe projects</summary>
+      <description>Hides the side panel for none haxe projects</description>
+    </key>
     <key type="s" name="hxml-uri">
       <default>'None'</default>
       <summary>Path to hxml file used for autocompletion</summary>
       <description>Path to hxml file used for autocompletion</description>
+    </key>
+    <key type="s" name="projects-location">
+      <default>'None'</default>
+      <summary>Path to default location for haxe projects</summary>
+      <description>Path to default location for haxe projects</description>
     </key>
   </schema>
 </schemalist>

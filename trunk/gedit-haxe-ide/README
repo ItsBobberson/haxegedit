@@ -1,4 +1,4 @@
-Haxe IDE completion plugin
+Gedit Haxe IDE plugin
 
 #----------------------------------------------------------------------------------
 Automatic install
@@ -10,16 +10,17 @@ Execute the install.sh as user to have it installed for user only, or as root to
 Manual install
 #----------------------------------------------------------------------------------
 for root:
-copy: haxeide.plugin and haxeide to: /usr/lib/gedit/plugins
+1)copy: haxeide.plugin and haxeide to: /usr/lib/gedit/plugins
+2)copy: org.gnome.gedit.plugins.haxecodecompletion.gschema.xml to: /usr/share/glib-2.0/schemas/
+3)run: glib-compile-schemas /usr/share/glib-2.0/schemas/
 
 for user: 
 1)copy: haxeide.plugin and haxeide to: ~/.local/share/gedit/plugins/
-2)
+2)copy: org.gnome.gedit.plugins.haxecodecompletion.gschema.xml to: /usr/share/glib-2.0/schemas/
+3)run: sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
 
-for user (as root):
-1)copy: org.gnome.gedit.plugins.haxecodecompletion.gschema.xml to: /usr/share/glib-2.0/schemas/
-2)run: sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
-
-
-Relaunch GEdit, go to Edit -> Preferences -> Plugins, and activate Haxe Code Completion.
+#----------------------------------------------------------------------------------
+Configuration
+#----------------------------------------------------------------------------------
+Relaunch GEdit, go to Edit -> Preferences -> Plugins, and activate Haxe IDE
 
