@@ -4,6 +4,7 @@
  Author: Ian Liu Rodrigues <ian.liu88@gmail.com> (modified from java.xml)
  Copyright (C) 2003 Gustavo Giráldez <gustavo.giraldez@gmx.net>
  Copyright (C) 2006 Jeff Walden <jwalden@mit.edu>
+ Copyright (C) 2012 Sapphire Becker <guess@logicplace.com>
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -35,6 +36,7 @@
     <style id="error" _name="Error" map-to="def:error"/>
     <style id="string" _name="String" map-to="def:string"/>
     <style id="external" _name="External" map-to="def:preprocessor"/>
+    <style id="preprocessor" _name="Preprocessor" map-to="def:preprocessor"/>
     <style id="declaration" _name="Declaration" map-to="def:type"/>
     <style id="storage-class" _name="Storage Class" map-to="def:type"/>
     <style id="scope-declaration" _name="Scope Declaration" map-to="def:type"/>
@@ -110,13 +112,21 @@
       <keyword>import</keyword>
       <keyword>package</keyword>
     </context>
-
+	<!--
     <define-regex id="preproc-start" extended="true">^\s*#\s*</define-regex>
 
     <context id="preo-proc" style-ref="external">
       <match extended="true">\%{preproc-start}if\b</match>
     </context>
-
+	-->
+	<context id="preo-proc" style-ref="preprocessor">
+		<prefix>^\s*#\s*</prefix>
+		<keyword>if</keyword>
+		<keyword>else</keyword>
+		<keyword>elseif</keyword>
+		<keyword>end</keyword>
+	 </context>
+	
     <context id="declarations" style-ref="declaration">
       <keyword>class</keyword>
       <keyword>enum</keyword>
@@ -227,6 +237,7 @@
         <context ref="block-comment"/>
         <context ref="close-comment-outside-comment"/>
         <context ref="externals"/>
+        <context ref="preo-proc"/>
         <context ref="declarations"/>
         <context ref="primitive-types"/>
         <context ref="storage-class"/>
@@ -242,3 +253,4 @@
 
   </definitions>
 </language>
+
