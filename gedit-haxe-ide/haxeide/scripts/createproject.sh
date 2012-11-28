@@ -1,6 +1,4 @@
 #!/bin/sh
-#
-# Installs the haxe code completion plugin for user or root
 
 #install a folder
 copy_folder() 
