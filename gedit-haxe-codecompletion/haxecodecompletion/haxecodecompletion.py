@@ -30,10 +30,9 @@ from configurationdialog import ConfigurationDialog
 from completionwindow import CompletionWindow
 
 class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configurable):
-    __gtype_name__ = "HaxeCompletionPlugin"
-    """Complete python code with the tab key."""
-    window = GObject.property(type=Gedit.Window)
 
+    __gtype_name__ = "HaxeCompletionPlugin"
+    window = GObject.property(type=Gedit.Window)
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
     re_non_alpha = re.compile(r"\W+", re.UNICODE | re.MULTILINE)
 
@@ -82,7 +81,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         widgets.append(self.window.get_views())
         widgets.append(self.window.get_documents())
         for widget in widgets:
-            if widget != []:
+            if widget != [] and 'get_data' in widget:
                 handler_ids = widget.get_data(self.name)
                 for handler_id in handler_ids:
                     widget.disconnect(handler_id)

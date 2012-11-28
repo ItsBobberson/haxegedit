@@ -2,8 +2,8 @@
 Loader=python
 Module=haxeide
 IAge=3
-Name=Haxe ide 
-Description=Extra panels and buttons for haxe
+Name=Haxe IDE
+Description=Integrated Development Environment for haXe
 Authors=Jan Flanders
 Copyright=None
 Icon=haxecodecompletionlogo

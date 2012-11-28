@@ -11,10 +11,11 @@ class SidePanel(GObject.Object, Gedit.WindowActivatable):
     def __init__(self, plugin):
         GObject.Object.__init__(self)
         self.plugin = plugin
+        self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
         
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("SidePanel.glade")
+        self.builder.add_from_file(self.dataDir + "/" + "ui" + "/" +"SidePanel.glade")
         self.builder.connect_signals(self)
         
         self.vbox = self.builder.get_object('vbox')
