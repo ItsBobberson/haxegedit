@@ -30,6 +30,7 @@ GCONF_DOT_COMPLETE = 'dot-complete'
 GCONF_DOT_AUTO_HIDE_CONSOLE = 'auto-hide-console'
 GCONF_DOT_AUTO_HIDE_SIDE_PANEL = 'auto-hide-side-panel'
 GCONF_HXML_PATH = "hxml-uri"
+GCONF_SESSIONS = "sessions"
 GCONF_PROJECTS_LOCATION = "projects-location"
 
 DEFAULT_KEYBINDING_COMPLETE = "ctrl+space"
@@ -193,18 +194,53 @@ def setKeybindingBuild(keybinding):
     __keybindingBuildTuple = {}
 
 def getHxmlFile():
-	global HXML_FILE
-	return HXML_FILE
+    global HXML_FILE
+    return getHxml()#HXML_FILE
 	
 def setHxmlFile(newFile):
-	global HXML_FILE
-	HXML_FILE = newFile
-	setHxmlPath(HXML_FILE)
+    global HXML_FILE
+    HXML_FILE = newFile
+    setHxml(HXML_FILE)
 	
 def setHxml(hxmlPath):
+    HXML_FILE = hxmlPath
     __settings.set_string(GCONF_HXML_PATH, hxmlPath)
 
+def getHxml():
+    return __settings.get_string(GCONF_HXML_PATH)
 
+def saveSessions(sessionsHash):
+    content = ""
+    for hxmlPath in sessionsHash:
+        content += "[session]\n"
+        fileList = sessionsHash[hxmlPath]
+        for fileName in fileList:
+            if fileName != None:
+                content += fileName + "\n"
+    __settings.set_string(GCONF_SESSIONS, content)
+    
+def getSessions():
+    sessionsTxt = __settings.get_string(GCONF_SESSIONS)
+    if sessionsTxt == "" or sessionsTxt == None or sessionsTxt == "None":
+        return {}
+        
+    sessionsList = sessionsTxt.split("[session]")
+    new_sessionsList = []
+    for i in sessionsList:
+        if i !="":
+            new_sessionsList.append(i)
+            
+    sessionsHash = {}
+    for i in new_sessionsList:
+        fileList = i.split('\n')
+        new_fileList = []
+        for j in fileList:
+            if j != "":
+                new_fileList.append(j)
+        if len(new_fileList) != 0:
+            sessionsHash[new_fileList[0]] = new_fileList
+    return sessionsHash
+    
     
 if __name__ == "__main__":
     __settings.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)

@@ -76,5 +76,11 @@
       <summary>Path to default location for new haxe projects</summary>
       <description>Path to default location for new haxe projects</description>
     </key>
+    <key type="s" name="sessions">
+      <default>'None'</default>
+      <summary>Paths to documents saved for a session</summary>
+      <description>Paths to documents saved for a session</description>
+    </key>
+    
   </schema>
 </schemalist>
