@@ -126,13 +126,3 @@ class SettingsFrame(Gtk.Frame):
         if fn != None:
             self.builder.get_object("projectsLocationInput").set_text(fn0)
             Configuration.setProjectsLocation(fn)
-    """
-    def onOpenFolderButtonClick(self, button):
-        dialog = Gtk.FileChooserDialog("Choose a project folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,"Select", Gtk.ResponseType.OK))
-        dialog.set_default_size(800, 400)
-        if dialog.run() == Gtk.ResponseType.OK:
-            fn = dialog.get_filename()
-            if fn != None:
-                self.builder.get_object("locationInput").set_text(fn)
-        dialog.destroy()    
-    """

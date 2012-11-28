@@ -48,11 +48,3 @@ class ProjectFrame(Gtk.Frame):
         fn = fileChooser.get_filename()
         if fn != None:
             self.builder.get_object("locationInput").set_text(fn)
-    """
-    def onOpenProjectButtonClick(self, button):
-        dialog = Gtk.FileChooserDialog("Choose a project folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,"Select", Gtk.ResponseType.OK))
-        dialog.set_default_size(800, 400)
-        if dialog.run() == Gtk.ResponseType.OK:
-            self.plugin.openProject(dialog.get_filename())
-        dialog.destroy()
-    """
