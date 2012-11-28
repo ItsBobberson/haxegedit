@@ -1,3 +1,4 @@
+import Configuration
 import os
 from gi.repository import GObject, Gtk, Gdk, Gedit, Gio, GLib
 import string
@@ -54,7 +55,8 @@ class BottomPanel(GObject.Object, Gedit.WindowActivatable):
             if errorInfo['fileLocation'][0] == "/" :
                 path = "/" + errorInfo['fileLocation']
             else:
-                path = os.path.dirname(self.plugin.hxmlPath) + "/" + errorInfo['fileLocation']
+                hxml = self.plugin.sf(Configuration.getHxml())
+                path = os.path.dirname(hxml) + "/" + errorInfo['fileLocation']
                 
             gio_file = Gio.file_new_for_path(path)
             tab = self.geditWindow.get_tab_from_location(gio_file)

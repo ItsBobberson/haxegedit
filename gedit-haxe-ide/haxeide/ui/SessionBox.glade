@@ -1,110 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkBox" id="vbox">
+  <object class="GtkHBox" id="hbox">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="margin_left">20</property>
     <property name="margin_right">20</property>
-    <property name="margin_top">10</property>
-    <property name="margin_bottom">5</property>
-    <property name="orientation">vertical</property>
-    <property name="spacing">10</property>
+    <property name="margin_top">20</property>
+    <property name="margin_bottom">20</property>
+    <property name="spacing">20</property>
     <child>
-      <object class="GtkBox" id="titleBox">
+      <object class="GtkFileChooserWidget" id="filechooser">
+        <property name="width_request">600</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="halign">center</property>
-        <property name="spacing">20</property>
-        <child>
-          <object class="GtkImage" id="image1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="pixbuf">../icons/haxe_logo_32.png</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">&lt;b&gt;Open a haXe project&lt;/b&gt;</property>
-            <property name="use_markup">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
+        <property name="orientation">vertical</property>
+        <signal name="selection-changed" handler="onFileSelect" swapped="no"/>
       </object>
       <packing>
-        <property name="expand">False</property>
+        <property name="expand">True</property>
         <property name="fill">True</property>
         <property name="position">0</property>
       </packing>
     </child>
     <child>
-      <object class="GtkBox" id="hbox1">
+      <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">20</property>
         <child>
-          <object class="GtkVBox" id="vbox1">
+          <object class="GtkBox" id="titleBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="spacing">20</property>
             <child>
-              <object class="GtkTreeView" id="treeView">
+              <object class="GtkImage" id="image">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">../icons/haxe_logo_32.png</property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box1">
+              <object class="GtkLabel" id="label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkButton" id="deleteSessionBtn">
-                    <property name="label" translatable="yes">clear session</property>
-                    <property name="visible">True</property>
-                    <property name="sensitive">False</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
-                    <signal name="clicked" handler="onDeleteSessionBtnClick" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="deleteSessionFileBtn">
-                    <property name="label" translatable="yes">remove from session</property>
-                    <property name="visible">True</property>
-                    <property name="sensitive">False</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
-                    <signal name="clicked" handler="onDeleteSessionFileBtnClick" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
+                <property name="label" translatable="yes">&lt;b&gt;Open a haXe project&lt;/b&gt;</property>
+                <property name="use_markup">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -120,12 +67,79 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFileChooserWidget" id="filechooser">
+          <object class="GtkVBox" id="sessionBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <signal name="file-activated" handler="onFileSelect" swapped="no"/>
-            <signal name="selection-changed" handler="onFileSelect" swapped="no"/>
+            <property name="spacing">20</property>
+            <child>
+              <object class="GtkTreeView" id="treeView">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="vexpand">True</property>
+                <property name="reorderable">True</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection" id="treeview-selection">
+                    <signal name="changed" handler="onTreeViewSelectionChanged" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="sessionButtonsBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">center</property>
+                <property name="spacing">10</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkButton" id="deleteSessionBtn">
+                    <property name="label" translatable="yes">remove session</property>
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_markup" translatable="yes">Removes the session from history.</property>
+                    <property name="tooltip_text" translatable="yes">Removes the session from history.</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="onDeleteSessionBtnClick" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="deleteSessionFileBtn">
+                    <property name="label" translatable="yes">remove file</property>
+                    <property name="sensitive">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="has_tooltip">True</property>
+                    <property name="tooltip_markup" translatable="yes">Removes the file from history.</property>
+                    <property name="tooltip_text" translatable="yes">Removes the file from history.</property>
+                    <property name="use_action_appearance">False</property>
+                    <signal name="clicked" handler="onDeleteSessionFileBtnClick" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -133,102 +147,155 @@
             <property name="position">1</property>
           </packing>
         </child>
-      </object>
-      <packing>
-        <property name="expand">True</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkHBox" id="hbox2">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">center</property>
-        <property name="spacing">10</property>
         <child>
-          <object class="GtkCheckButton" id="closeTabsCheckBox">
-            <property name="label" translatable="yes">close current documents</property>
+          <object class="GtkBox" id="hxmlPathBox">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="tooltip_text" translatable="yes">Important: unsaved documents will also closed.</property>
-            <property name="halign">end</property>
-            <property name="use_action_appearance">False</property>
-            <property name="xalign">0</property>
-            <property name="draw_indicator">True</property>
+            <property name="can_focus">False</property>
+            <property name="spacing">20</property>
+            <child>
+              <object class="GtkEntry" id="locationInput">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">●</property>
+                <property name="invisible_char_set">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="position">2</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="openSessionBtn">
-            <property name="label" translatable="yes">Open session</property>
+          <object class="GtkBox" id="checkButtonsBox">
             <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="onOpenSessionBtnClick" swapped="no"/>
+            <property name="can_focus">False</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkCheckButton" id="closeTabsCheckBox">
+                <property name="label" translatable="yes">close tabs</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Close currently open tabs.</property>
+                <property name="tooltip_text" translatable="yes">Close currently open tabs.</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="useHxmlCheckBox">
+                <property name="label" translatable="yes">use hxml</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Set the hxml file as new build file.</property>
+                <property name="tooltip_text" translatable="yes">Set the hxml file as new build file.</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="setRootCheckBox">
+                <property name="label" translatable="yes">set rootfolder</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="has_tooltip">True</property>
+                <property name="tooltip_markup" translatable="yes">Use hxml as root in the file browser panel</property>
+                <property name="tooltip_text" translatable="yes">Use hxml as root in the file browser panel</property>
+                <property name="use_action_appearance">False</property>
+                <property name="xalign">0</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">4</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="openProjectBtn">
-            <property name="label" translatable="yes">Open project</property>
+          <object class="GtkHBox" id="buttonsBox">
             <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
+            <property name="can_focus">False</property>
             <property name="halign">center</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="onOpenProjectBtnClick" swapped="no"/>
+            <property name="spacing">10</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkButton" id="openProjectBtn">
+                <property name="label" translatable="yes">Open project</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <signal name="clicked" handler="onOpenProjectBtnClick" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="openSessionBtn">
+                <property name="label" translatable="yes">Open session</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <signal name="clicked" handler="onOpenSessionBtnClick" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">2</property>
+            <property name="position">5</property>
           </packing>
         </child>
       </object>
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkBox" id="hxmlPathBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="hexpand">True</property>
-        <property name="spacing">20</property>
-        <child>
-          <object class="GtkEntry" id="locationInput">
-            <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="hexpand">True</property>
-            <property name="invisible_char">●</property>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">3</property>
+        <property name="position">1</property>
       </packing>
     </child>
   </object>
