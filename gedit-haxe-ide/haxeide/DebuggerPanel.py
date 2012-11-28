@@ -88,6 +88,27 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
 
         self.toolbar.show_all()
         
+        self.debugHistoryComboBox = self.builder.get_object("debugHistoryComboBox")
+        self.debugHistoryComboBox.connect("changed", self.onDebugHistoryComboBoxChange)
+        listStore = Gtk.ListStore(str)
+        debugFilesList = Configuration.getDebugFiles()
+        for key in debugFilesList:
+            listStore.append([key])
+        if len(debugFilesList)==0:
+            listStore.append(["bin/index.swf"])
+            listStore.append(["bin/Main-debug"])
+            
+        renderer_text = Gtk.CellRendererText()
+        self.debugHistoryComboBox.pack_start(renderer_text, True)
+        #self.debugHistoryComboBox.add_attribute(renderer_text, "text", 0)
+        self.debugHistoryComboBox.set_entry_text_column(0)
+
+        self.debugHistoryComboBox.set_model(listStore)
+        self.debugHistoryComboBox.set_active(0)
+   
+    def onDebugHistoryComboBoxChange(self, combo):
+        self.onBinFileInputChange(combo.get_child())#self.builder.get_object("debugHistoryComboBoxInput"))
+
     def activate(self):
         self.geditBottomPanel.activate_item(self.box)
             
@@ -106,18 +127,17 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
             self.debugType = "gdb"
             self.eom = "(gdb)"
             self.builder.get_object("urlLabel").set_text("cpp:")
-            
         self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
             
     def onStartDebugButtonClick(self, button):
         hxml = self.sf(Configuration.getHxml())
         hxmlDir = os.path.dirname(hxml)
-        file = self.builder.get_object("urlInput").get_text()
+        file = self.debugHistoryComboBox.get_child().get_text()
         path = hxmlDir + "/" + file
-        
         if not os.path.isfile(path):
             self.appendText("Could not find " + path)
         else:
+            Configuration.saveDebugFiles(self.debugHistoryComboBox.get_model(), file)
             self.builder.get_object("urlBox").hide()
             self.builder.get_object("buttonBox").show()
             

@@ -124,6 +124,11 @@
       <summary>Show current hxml file in the toolbar</summary>
       <description>Show current hxml file in the toolbar</description>
     </key>
+    <key type="s" name="debug-history">
+      <default>"None"</default>
+      <summary>Paths to previously debugged applications</summary>
+      <description>Paths to previously debugged applications</description>
+    </key>
     
   </schema>
 </schemalist>
