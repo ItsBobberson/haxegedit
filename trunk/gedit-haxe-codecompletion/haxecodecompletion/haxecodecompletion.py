@@ -43,6 +43,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         self.window = None
         self.islaunching = False
         self.tempstring = ""
+        self.w=None
 
     def do_activate(self):
         """Activate plugin."""
@@ -143,7 +144,7 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         # Nothing in the completion list, so no need to do anything
         if not completes:
             return self.cancel()
-        print incomplete
+        #print incomplete
         self.show_popup (view, completes, incomplete)
 
     def is_configurable(self):
@@ -211,7 +212,9 @@ class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configura
         # Get the original position of the Window
         root_x, root_y = self.window.get_position()
         # Create the popup
-        popup = CompletionWindow(self.window, self)
+        if self.w == None:
+            self.w = CompletionWindow(self.window, self)
+        popup = self.w
         # Set its font accordingly
         context = view.get_pango_context()
         font_desc = context.get_font_description()
