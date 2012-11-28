@@ -25,7 +25,6 @@ class ProjectFrame(Gtk.Frame):
         package = Configuration.getProjectDefaultPackage()
         if package ==None or package =="None":
             package=""
-        self.builder.get_object("packageInput").set_text(package)
             
         main = Configuration.getProjectDefaultMain()
         if main ==None or main =="None":
@@ -35,13 +34,13 @@ class ProjectFrame(Gtk.Frame):
         else:
             self.builder.get_object("mainInput").set_text(main)
             
-        self.show_all()
-        
+        #self.show_all()
+ 
     def onCreateProjectButtonClick(self, button):
         destinationFolder = self.builder.get_object("locationInput").get_text()
         projectFolder = self.builder.get_object("nameInput").get_text()
         mainFile = self.builder.get_object("mainInput").get_text()
-        #package = self.builder.get_object("packageInput").get_text()
+
         if destinationFolder != "" and projectFolder != "" and mainFile !="":
             target = "flash"
             if self.builder.get_object("jsCheckBtn").get_active():
@@ -70,10 +69,7 @@ class ProjectFrame(Gtk.Frame):
             tabsToClose = []
             for d in self.plugin.window.get_documents():
                 if not d in unsavedDocuments or d.is_untouched() or d.is_untitled():
-                    uri = self.sf(d.get_uri_for_display())
-                    file = Gio.file_new_for_uri("file://" + uri)
-                    tab = self.plugin.window.get_tab_from_location(file)
-                    tabsToClose.append(tab);
+                    tabsToClose.append(Gedit.Tab.get_from_document(d));
             self.plugin.window.close_tabs(tabsToClose)
             
     #sanitize file

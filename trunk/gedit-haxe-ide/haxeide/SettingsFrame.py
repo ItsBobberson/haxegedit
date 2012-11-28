@@ -73,9 +73,7 @@ class SettingsFrame(Gtk.Frame):
         self.set_hexpand(False)
         self.set_vexpand(False)
                 
-        self.show_all()
-    
-    
+        #self.show_all()
     
     #   Code Completion
     def getKeybindingComplete(self):

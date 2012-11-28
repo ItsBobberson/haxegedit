@@ -24,6 +24,9 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.haxeButton = Gtk.ToolButton(icon_widget=Gtk.Image.new_from_file(self.dataDir+"/"+"icons"+"/"+ "haxe_logo_24.png"))
         self.haxeButton.connect("clicked", self.onHaxeButtonClick)
         
+        self.debugButton = Gtk.ToolButton(icon_widget=Gtk.Image.new_from_file(self.dataDir+"/"+"icons"+"/"+ "bug_grey_16.png"))
+        self.debugButton.connect("clicked", self.onDebugButtonClick)
+        
         self.hxmlButton = Gtk.ToolButton(stock_id=Gtk.STOCK_PROPERTIES)
         self.hxmlButton.connect("clicked", self.onHxmlButtonClick)
         
@@ -38,6 +41,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.sessionsButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.haxeButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.hxmlButton)
+        self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.debugButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.playButton)
         self.geditToolbar.insert(pos = len(self.geditToolbar.get_children()),item = self.buildButton)
         self.geditToolbar.show_all()
@@ -82,6 +86,9 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.hxmlButton.set_tooltip_text('Run output')
         self.hxmlButton.set_sensitive(False)
         
+        self.hxmlButton.set_tooltip_text('Debug project')
+        self.hxmlButton.set_sensitive(False)
+        
         self.buildButton.set_tooltip_text('Build project')
         self.buildButton.set_is_important(True)
         self.buildButton.set_label("")
@@ -90,9 +97,10 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
     def remove(self):
         self.geditToolbar.remove(self.separator1)
         self.geditToolbar.remove(self.sessionsButton)
-        self.geditToolbar.remove(self.buildButton)
-        self.geditToolbar.remove(self.hxmlButton)
         self.geditToolbar.remove(self.haxeButton)
+        self.geditToolbar.remove(self.debugButton)
+        self.geditToolbar.remove(self.hxmlButton)
+        self.geditToolbar.remove(self.buildButton)
 
         self.geditWindow.disconnect(self.h0)
         self.geditWindow.disconnect(self.h1)
@@ -138,7 +146,14 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         
     def onPlayButtonClick(self, button):
         self.plugin.runApplication(Configuration.getHxml())
- 
+        
+    def onDebugButtonClick(self, button):
+        Gedit.App.get_default().get_active_window().get_side_panel().set_property("visible", True)
+        self.plugin.debuggerInfoPanel.activate()
+        
+        Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
+        self.plugin.debuggerPanel.activate()
+        
     def setHxml(self, settings, key):
         hxml = Configuration.getHxml()
         if hxml=="" or hxml == None:
@@ -147,20 +162,16 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         parts = hxml.split("/")
         l = len(parts)
         label = parts[l-2]
-        #if Configuration.getBuildPathShowHxml():
+
         if Configuration.getToolBarShowHxml():
              label = label + "/" + parts[l-1]
         
         self.buildButton.set_label(label)
         self.buildButton.set_sensitive(True)
-        #self.debugButton.set_sensitive(True)
+        self.debugButton.set_sensitive(True)
         self.hxmlButton.set_tooltip_text(hxml)
-        #self.sessionButton.set_sensitive(True)
+
         """
-        self.sessionButton = Gtk.ToolButton(stock_id=Gtk.STOCK_ADD)
-        self.sessionButton.connect("clicked", self.saveSession)
-        
-        
         self.projectsComboBox = Gtk.ComboBox()
         self.projectsComboBox.connect("changed", self.onProjectsComboBoxChange)
         listStore = Gtk.ListStore(str,str)
@@ -191,15 +202,13 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
             print "Entered: %s" % entry.get_text()
     """   
     def handleCloseAllDocuments(self):
+        #if self.builder.get_object("closeTabsCheckBox").get_active():
         unsavedDocuments = self.plugin.window.get_unsaved_documents()
         tabsToClose = []
         for d in self.plugin.window.get_documents():
             if not d in unsavedDocuments or d.is_untouched() or d.is_untitled():
-                uri = self.sf(d.get_uri_for_display())
-                file = Gio.file_new_for_uri("file://" + uri)
-                tab = self.plugin.window.get_tab_from_location(file)
-                tabsToClose.append(tab);
-        self.plugin.window.close_tabs(tabsToClose)
+                tabsToClose.append(Gedit.Tab.get_from_document(d));
+        self.plugin.window.close_tabs(tabsToClose)    
             
     #sanitize file
     def sf(self, path):

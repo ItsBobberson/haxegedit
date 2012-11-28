@@ -66,7 +66,7 @@ class SessionFrame(Gtk.Frame):
         Configuration.settings().connect("changed::session-path-show-hxml", self.getSessions)
 
         self.getSessions(None, None)
-        self.show_all()
+        #self.show_all()
 
     def onOpenProjectBtnClick(self, button):
         self.handleCloseAllDocuments()
@@ -148,10 +148,7 @@ class SessionFrame(Gtk.Frame):
             tabsToClose = []
             for d in self.plugin.window.get_documents():
                 if not d in unsavedDocuments or d.is_untouched() or d.is_untitled():
-                    uri = self.sf(d.get_uri_for_display())
-                    file = Gio.file_new_for_uri("file://" + uri)
-                    tab = self.plugin.window.get_tab_from_location(file)
-                    tabsToClose.append(tab);
+                    tabsToClose.append(Gedit.Tab.get_from_document(d));
             self.plugin.window.close_tabs(tabsToClose)
             
     #sanitize file
