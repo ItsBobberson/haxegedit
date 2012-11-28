@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import re
@@ -31,7 +30,7 @@ def make_word (abbr, type):
     return word
 
 
-def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,package):
+def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile, package):
 	#check for utf-8 with written BOM
     if ord(origdoc[0])>256:
         offset=offset+2
@@ -54,26 +53,16 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=basedir)
     out = proc.communicate ()
 
-    msg = out[1]
-
-    begin = msg.find ("<type>\n")
-    if begin != -1: # This is a function type
-        end = msg.find ("\n</type>")
-        msg = msg [begin + len ("<type>\n") :end]
-        msg = msg.replace ("&gt;", ">")
-        msg = msg.replace ("&lt;", "<")
-        os.rename (fullpath + ".bak", fullpath)
-        return make_word ("", msg)
-
-    begin = msg.find ("<list>")
+    str = out[1]
+    begin = str.find ("<list>")
     if begin != -1:
-        msg = msg[begin:]
+        str = str[begin:]
 
     already = set () # FIXME : haxe compiler outputs two times package names.
     result = None
     try:
         if proc.returncode == 0:
-            xmldom = parseString (msg)
+            xmldom = parseString (str)
             list = xmldom.getElementsByTagName ('i')
             result = []
             for item in list:
@@ -91,10 +80,12 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
                 dict["word"] = make_word (dict["abbr"], dict["type"])
                 result.append (dict)
         else:
-            result = "Error : " + msg
+            result = []
+            result.append({"word":"Error: "+str})
+            print str
     except Exception, e:
         print e
-        print msg
+        print str
 
     os.rename (fullpath + ".bak", fullpath)
 
@@ -103,6 +94,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
 def haxe_complete (fileloc, origdoc, offset):
     package = get_packages (origdoc)
     complete_path = fileloc.replace ("file://", "")
+    #complete_path = urllib.unquote (fileloc.replace ("file://", ""))
     dirname = os.path.dirname (complete_path)
     filename = os.path.basename (complete_path)
 	
