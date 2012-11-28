@@ -69,7 +69,7 @@ class ProjectFrame(Gtk.Frame):
             unsavedDocuments = self.plugin.window.get_unsaved_documents()
             tabsToClose = []
             for d in self.plugin.window.get_documents():
-                if not d in unsavedDocuments:
+                if not d in unsavedDocuments or d.is_untouched() or d.is_untitled():
                     uri = self.sf(d.get_uri_for_display())
                     file = Gio.file_new_for_uri("file://" + uri)
                     tab = self.plugin.window.get_tab_from_location(file)

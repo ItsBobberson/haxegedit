@@ -12,6 +12,7 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
         self.plugin = plugin
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
+        self.debugType = "fdb"
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.dataDir + "/" + "ui" + "/" + "DebuggerBox.glade")
@@ -91,17 +92,30 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
         self.textView.scroll_mark_onscreen(textBuffer.get_insert())
         #self.textView.scroll_to_mark(textBuffer.get_insert(), 0)
         
+    def onBinFileInputChange(self, entry):
+        if entry.get_text().endswith(".swf"):
+            self.debugType = "fdb"
+            self.builder.get_object("urlLabel").set_text("swf:")
+            self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
+        else:
+            self.debugType = "gdb"
+            self.builder.get_object("urlLabel").set_text("cpp:")
+            self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
+            
     def onStartDebugButtonClick(self, button):
-        swf = self.builder.get_object("urlInput").get_text()
+        file = self.builder.get_object("urlInput").get_text()
         hxml = self.plugin.sf(Configuration.getHxml())
-        path = os.path.dirname(hxml) + "/" + swf
+        path = os.path.dirname(hxml) + "/" + file
         if not os.path.isfile(path):
             self.appendText("Could not find " + path)
         else:
             self.builder.get_object("urlBox").hide()
             self.builder.get_object("buttonBox").show()
-            #self.plugin.debug(swf)
-            GObject.idle_add(self.plugin.debug, swf)
+
+            if self.debugType=="fdb":
+                GObject.idle_add(self.plugin.debugAVM2, file)
+            else:
+                GObject.idle_add(self.plugin.debugCPP, file)
             
     def onQuitButtonClick(self, button):
         self.plugin.sendDebugCommand("quit")

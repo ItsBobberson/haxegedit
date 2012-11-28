@@ -32,6 +32,7 @@
             <property name="can_focus">True</property>
             <property name="invisible_char">●</property>
             <property name="text" translatable="yes">./bin/index.swf</property>
+            <signal name="changed" handler="onBinFileInputChange" swapped="no"/>
           </object>
           <packing>
             <property name="expand">True</property>
