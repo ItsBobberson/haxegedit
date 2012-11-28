@@ -1,9 +1,9 @@
 package;
+import cpp.io.File;
 import cpp.FileSystem;
 import cpp.Lib;
 import cpp.Sys;
-import cpp.io.Bytes;
-import cpp.io.File;
+import haxe.io.Bytes;
 
 class Main
 {
