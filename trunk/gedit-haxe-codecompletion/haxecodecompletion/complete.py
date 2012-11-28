@@ -81,7 +81,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     try:
         if proc.returncode == 0:
             xmldom = parseString (str)
-            if typeList:
+            if typeList and not configuration.getTypeOnlyHideComplete():
                 list = xmldom.getElementsByTagName ('type')
                 result = []
                 for item in list:

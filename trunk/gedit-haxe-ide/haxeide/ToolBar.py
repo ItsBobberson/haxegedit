@@ -124,7 +124,7 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
         self.plugin.saveSession()
     
     def onProjectsChange(self, item, data):
-        self.plugin.window.close_all_tabs()
+        self.handleCloseAllDocuments()
         self.plugin.openSession(data, True, True)
      
     def onHaxeButtonClick(self, button):
@@ -190,5 +190,22 @@ class ToolBar(GObject.Object, Gedit.WindowActivatable):
             entry = combo.get_child()
             print "Entered: %s" % entry.get_text()
     """   
-        
+    def handleCloseAllDocuments(self):
+        unsavedDocuments = self.plugin.window.get_unsaved_documents()
+        tabsToClose = []
+        for d in self.plugin.window.get_documents():
+            if not d in unsavedDocuments:
+                uri = self.sf(d.get_uri_for_display())
+                file = Gio.file_new_for_uri("file://" + uri)
+                tab = self.plugin.window.get_tab_from_location(file)
+                tabsToClose.append(tab);
+        self.plugin.window.close_tabs(tabsToClose)
+            
+    #sanitize file
+    def sf(self, path):
+        if path == None or path=="":
+            return path
+        if path[1]=="/":
+            return path[1:]
+        return path    
         

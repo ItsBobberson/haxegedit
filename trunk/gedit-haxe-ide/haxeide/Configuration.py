@@ -124,6 +124,14 @@ def setEscHideComplete(v):
     __settings.set_boolean("esc-hide-complete",v)
 
 """
+typeonly-hide-complete
+""" 
+def getTypeOnlyHideComplete():
+    return __settings.get_boolean("typeonly-hide-complete")
+def setTypeOnlyHideComplete(v):
+    __settings.set_boolean("typeonly-hide-complete",v)
+    
+"""
 empty-hide-complete
 """ 
 def getEmptyHideComplete():
@@ -170,6 +178,8 @@ def getNonAlphaComplete():
     return __settings.get_boolean("non-alpha-complete")
 def setNonAlphaComplete(v):
     __settings.set_boolean("non-alpha-complete",v)
+
+       
 """
 GCONF_DOT_AUTO_HIDE_CONSOLE
 """ 

@@ -38,8 +38,8 @@ HXML_FILE = None
 
 HAXE_EXEC_PATH = "haxe"
 
-__client = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
-#__client.connect("changed::hxml-uri", self.onHxmlUriChange)
+__settings = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
+#__settings.connect("changed::hxml-uri", self.onHxmlUriChange)
 
 # Cached keybinding
 __keybindingComplete = ""
@@ -48,47 +48,54 @@ __keybindingCompleteTuple = {}
 __dotComplete = True
 
 def getEscHideComplete():
-    return __client.get_boolean("esc-hide-complete")
+    return __settings.get_boolean("esc-hide-complete")
 def setEscHideComplete(v):
-    __client.set_boolean("esc-hide-complete",v)
+    __settings.set_boolean("esc-hide-complete",v)
 
 def getEmptyHideComplete():
-    return __client.get_boolean("empty-hide-complete")
+    return __settings.get_boolean("empty-hide-complete")
 def setEmptyHideComplete(v):
-    __client.set_boolean("empty-hide-complete",v)
+    __settings.set_boolean("empty-hide-complete",v)
+
+def getTypeOnlyHideComplete():
+    return __settings.get_boolean("typeonly-hide-complete")
+def setTypeOnlyHideComplete(v):
+    __settings.set_boolean("typeonly-hide-complete",v)
     
 def getSpaceComplete():
-    return __client.get_boolean("space-complete")
+    return __settings.get_boolean("space-complete")
 def setSpaceComplete(v):
-    __client.set_boolean("space-complete",v)
+    __settings.set_boolean("space-complete",v)
     
 def getTabComplete():
-    return __client.get_boolean("tab-complete")
+    return __settings.get_boolean("tab-complete")
 def setTabComplete(v):
-    __client.set_boolean("tab-complete",v)
+    __settings.set_boolean("tab-complete",v)
     
 def getEnterComplete():
-    return __client.get_boolean("enter-complete")
+    return __settings.get_boolean("enter-complete")
 def setEnterComplete(v):
-    __client.set_boolean("enter-complete",v)
+    __settings.set_boolean("enter-complete",v)
     
 def getDoubleDotComplete():
-    return __client.get_boolean("double-dot-complete")
+    return __settings.get_boolean("double-dot-complete")
 def setDoubleDotComplete(v):
-    __client.set_boolean("double-dot-complete",v)
+    __settings.set_boolean("double-dot-complete",v)
     
 def getNonAlphaComplete():
-    return __client.get_boolean("non-alpha-complete")
+    return __settings.get_boolean("non-alpha-complete")
 def setNonAlphaComplete(v):
-    __client.set_boolean("non-alpha-complete",v)
-        
+    __settings.set_boolean("non-alpha-complete",v)
+
+
+    
 def getDotComplete():
     """
     Returns a boolean (as flag to toggle dot completion) from configuration file, e.g. "True"
     """
     global __dotComplete
     __dotComplete = DEFAULT_DOT_COMPLETE
-    dot = __client.get_boolean(GCONF_DOT_COMPLETE)
+    dot = __settings.get_boolean(GCONF_DOT_COMPLETE)
     
     #print "popup event.keyval %s" % event.keyval
     """
@@ -106,7 +113,7 @@ def setDotComplete(dot):
     Saves a boolean with the value used to toglle  dot code completion to the gconf entry, e.g. "False".
     """
     global __dotComplete
-    __client.set_boolean(GCONF_DOT_COMPLETE, dot)
+    __settings.set_boolean(GCONF_DOT_COMPLETE, dot)
     __dotComplete = dot
     
 def getKeybindingComplete():
@@ -117,7 +124,7 @@ def getKeybindingComplete():
     global __keybindingComplete
     # Get keybinding from cache, then gconf or else use default.
     if len(__keybindingComplete) == 0:
-        keybinding = __client.get_string(GCONF_KEYBINDING_COMPLETE)
+        keybinding = __settings.get_string(GCONF_KEYBINDING_COMPLETE)
         __keybindingCompleteTuple = {} # Invalidate cache
         if not keybinding:
             __keybindingComplete = DEFAULT_KEYBINDING_COMPLETE
@@ -171,25 +178,25 @@ def setKeybindingComplete(keybinding):
     """
     global __keybindingComplete
     global __keybindingCompleteTuple
-    __client.set_string(GCONF_KEYBINDING_COMPLETE, keybinding)
+    __settings.set_string(GCONF_KEYBINDING_COMPLETE, keybinding)
     __keybindingComplete = keybinding
     __keybindingCompleteTuple = {}
 
 def getHxml():
-    return __client.get_string(GCONF_HXML_PATH)
+    return __settings.get_string(GCONF_HXML_PATH)
     
 def getHxmlFile():
 	global HXML_FILE
 	#return HXML_FILE
-	return __client.get_string(GCONF_HXML_PATH)
+	return __settings.get_string(GCONF_HXML_PATH)
 	
 def setHxmlFile(newFile):
 	global HXML_FILE
 	HXML_FILE = newFile
-	__client.set_string(GCONF_HXML_PATH, newFile)
+	__settings.set_string(GCONF_HXML_PATH, newFile)
       
 if __name__ == "__main__":
-    __client.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)
+    __settings.set_string(GCONF_KEYBINDING_COMPLETE, DEFAULT_KEYBINDING_COMPLETE)
     print "Old keybindging was:", getKeybindingComplete()
     print "Old keybindging tuple was:", getKeybindingCompleteTuple()
     newKeybinding = "ctrl+space"

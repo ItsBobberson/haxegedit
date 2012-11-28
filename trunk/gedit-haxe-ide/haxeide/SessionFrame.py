@@ -1,4 +1,4 @@
-from gi.repository import GObject, Gtk, Gdk, Gedit
+from gi.repository import GObject, Gtk, Gdk, Gio, Gedit
 import string
 import os
 import Configuration
@@ -141,7 +141,23 @@ class SessionFrame(Gtk.Frame):
                 label = label + "/" + parts[-1]
             listStore.append([label, key])
         self.builder.get_object("treeView").set_model(listStore)
-   
+        
     def handleCloseAllDocuments(self):
         if self.builder.get_object("closeTabsCheckBox").get_active():
-            self.plugin.window.close_all_tabs()
+            unsavedDocuments = self.plugin.window.get_unsaved_documents()
+            tabsToClose = []
+            for d in self.plugin.window.get_documents():
+                if not d in unsavedDocuments:
+                    uri = self.sf(d.get_uri_for_display())
+                    file = Gio.file_new_for_uri("file://" + uri)
+                    tab = self.plugin.window.get_tab_from_location(file)
+                    tabsToClose.append(tab);
+            self.plugin.window.close_tabs(tabsToClose)
+            
+    #sanitize file
+    def sf(self, path):
+        if path == None or path=="":
+            return path
+        if path[1]=="/":
+            return path[1:]
+        return path
