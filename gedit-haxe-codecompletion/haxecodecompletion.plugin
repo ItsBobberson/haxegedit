@@ -1,9 +1,10 @@
-[Gedit Plugin]
+[Plugin]
 Loader=python
 Module=haxecodecompletion
-IAge=2
+IAge=3
 Name=Haxe Code Completion
-Description=Complete Haxe code with Ctrl+Space key combination
+Description=Completes Haxe code after .(dot) or with a key combination
 Authors=Christophe Eymard (Pwipwi) <christophe.eymard@gmail.com>,Rodrigo Pinheiro Marques de Araujo (Fenrrir) <fenrrir@gmail.com>
 Copyright=None
-
+Icon=haxecodecompletionlogo
+Website=http://www.gedit.org

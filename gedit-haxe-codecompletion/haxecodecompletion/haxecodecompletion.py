@@ -20,40 +20,40 @@
 """Complete python code with Ctrl+Alt+Space key combination."""
 
 
-import gedit
-import gobject
-import gtk
+from gi.repository import GObject, Gtk, Gdk, Gedit, PeasGtk
 import re
 from complete import haxe_complete
 import configurationdialog
 import configuration
 
+from configurationdialog import ConfigurationDialog
 from completionwindow import CompletionWindow
 
-class CompletionPlugin(gedit.Plugin):
-
+class CompletionPlugin(GObject.Object, Gedit.WindowActivatable,PeasGtk.Configurable):
+    __gtype_name__ = "HaxeCompletionPlugin"
     """Complete python code with the tab key."""
+    window = GObject.property(type=Gedit.Window)
 
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
     re_non_alpha = re.compile(r"\W+", re.UNICODE | re.MULTILINE)
 
     def __init__(self):
-
-        gedit.Plugin.__init__(self)
+        GObject.Object.__init__(self)
         self.completions = None
         self.name = "HaxeCompletionPlugin"
         self.window = None
+        self.islaunching = False
+        self.tempstring = ""
 
-    def activate(self, window):
+    def do_activate(self):
         """Activate plugin."""
 
-        self.window = window
         handler_ids = []
         callback = self.on_window_tab_added
-        handler_id = window.connect("tab-added", callback)
+        handler_id = self.window.connect("tab-added", callback)
         handler_ids.append(handler_id)
-        window.set_data(self.name, handler_ids)
-        for view in window.get_views():
+        self.window.set_data(self.name, handler_ids)
+        for view in self.window.get_views():
             self.connect_view(view)
 
     def cancel(self):
@@ -68,23 +68,31 @@ class CompletionPlugin(gedit.Plugin):
         handler_ids.append(handler_id)
         view.set_data(self.name, handler_ids)
 
-    def create_configure_dialog(self):
-        """Creates and displays a ConfigurationDialog."""
-        dlg = configurationdialog.ConfigurationDialog()
-        return dlg
-
-    def deactivate(self, window):
+    #def create_configure_dialog(self):
+        #"""Creates and displays a ConfigurationDialog."""
+        #dlg = configurationdialog.ConfigurationDialog()
+        #return dlg
+        
+    def do_create_configure_widget(self):
+        return  ConfigurationDialog().create_widget()
+        
+    def do_deactivate(self):
         """Deactivate plugin."""
-        widgets = [window]
-        widgets.append(window.get_views())
-        widgets.append(window.get_documents())
+        widgets = [self.window]
+        widgets.append(self.window.get_views())
+        widgets.append(self.window.get_documents())
         for widget in widgets:
-            handler_ids = widget.get_data(self.name)
-            for handler_id in handler_ids:
-                widget.disconnect(handler_id)
-            widget.set_data(self.name, None)
+            if widget != []:
+                handler_ids = widget.get_data(self.name)
+                for handler_id in handler_ids:
+                    widget.disconnect(handler_id)
+                widget.set_data(self.name, None)
         self.window = None
-        cleanup ()
+        #cleanup ()
+
+    def do_update_state(self):
+        pass
+        #print "Window %s state updated." % self.window
 
     def display_completions(self, view, event):
         """Find completions and display them."""
@@ -93,12 +101,12 @@ class CompletionPlugin(gedit.Plugin):
 
         offset = 0
         incomplete = u''
-        text = unicode (doc.get_text (*doc.get_bounds ()), 'utf-8')
+        text = unicode (doc.get_text (*doc.get_bounds (),include_hidden_chars=True), 'utf-8')
 
         # We first get the line we're in and verify we're not in a line comment
         linestart = insert.copy ()
         linestart.set_offset (insert.get_offset () - insert.get_line_offset ())
-        current_line = unicode (doc.get_text (linestart, insert))
+        current_line = unicode (doc.get_text (linestart, insert, include_hidden_chars=True))
         comment_index = current_line.find ('//')       
         if comment_index != -1 and insert.get_line_offset () > comment_index:
             return self.cancel ()
@@ -117,20 +125,17 @@ class CompletionPlugin(gedit.Plugin):
             if not self.re_alpha.match(char) or char == ".":
                 start.forward_char()
                 break
-        incomplete = unicode(doc.get_text(start, insert))
+        incomplete = unicode(doc.get_text(start, insert, include_hidden_chars=True))
 
         # If the number we're trying to complete is a digit, we stop the completion
         if incomplete.isdigit ():
             return self.cancel ()
 
-        if event.keyval == gtk.keysyms.period or event.keyval == gtk.keysyms.parenleft:
-            char = "."
-            if event.keyval == gtk.keysyms.parenleft:
-                char = "("
+        if event.keyval == Gdk.KEY_period and configuration.getDotComplete():
             # If we complete with the dot key, gedit won't have inserted it prior to calling
             # this function, which is why we add the dot manually
             offset = insert.get_offset ()
-            text = text[:offset] + char + text[offset:]
+            text = text[:offset] + '.' + text[offset:]
             if text[offset - 1] == '.': # We don't want to complete something we KNOW is incorrect.
                 # This is just to avoid waiting when doing the ... operator.
                 return self.cancel ()
@@ -140,17 +145,11 @@ class CompletionPlugin(gedit.Plugin):
             offset = start.get_offset ()
 
         # We call the haxe engine to get the list of completion.
-        completes = haxe_complete (doc.get_uri (), text, offset)
+        completes = haxe_complete (doc.get_uri_for_display (), text, offset)
 
         # Nothing in the completion list, so no need to do anything
         if not completes:
             return self.cancel()
-
-        if (type (completes) == type ("")): # Just a function type
-            # We reset the status bar anyway.
-            self.status.pop (self.context)
-            self.status.push (self.context, completes)
-            return self.cancel ()
 
         self.show_popup (view, completes, incomplete)
 
@@ -159,13 +158,18 @@ class CompletionPlugin(gedit.Plugin):
         return True
 
     def on_view_key_press_event(self, view, event):
+        #print "view event.keyval %s" % event.keyval
+        if self.islaunching:
+            self.tempstring += event.string
         """Display the completion window or complete the current word."""
         active_doc = self.window.get_active_document()
+        #print "active_doc.get_uri_for_display() %s ." % active_doc.get_uri_for_display()
+        #print "active_doc.get_short_name_for_display() %s ." % active_doc.get_short_name_for_display()
         # If the current tab is not a Haxe sourcefile, do not attempt to complete
         # TODO It would be best to never get called in the first place.
 
         try:
-            if not active_doc.get_uri ().endswith ('hx'):
+            if not active_doc.get_uri_for_display().endswith ('hx'):
                 return self.cancel ()
         except:
             return self.cancel ()
@@ -173,34 +177,39 @@ class CompletionPlugin(gedit.Plugin):
         #  The "Alt"-key might be mapped to something else
         # TODO Find out which keybinding are already in use.
         keybinding = configuration.getKeybindingCompleteTuple()
-        ctrl_pressed = (event.state & gtk.gdk.CONTROL_MASK) == gtk.gdk.CONTROL_MASK
-        #alt_pressed = (event.state & gtk.gdk.MOD1_MASK) == gtk.gdk.MOD1_MASK
-        #shift_pressed = (event.state & gtk.gdk.SHIFT_MASK) == gtk.gdk.SHIFT_MASK
-        keyval = gtk.gdk.keyval_from_name(keybinding[configuration.KEY])
-        key_pressed = (event.keyval == keyval)
 
+        ctrl_pressed = (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK
+        alt_pressed = (event.state & Gdk.ModifierType.MOD1_MASK) == Gdk.ModifierType.MOD1_MASK
+        shift_pressed = (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK
         # It's ok if a key is pressed and it's needed or
         # if a key is not pressed if it isn't needed.
         ctrl_ok = not (keybinding[configuration.MODIFIER_CTRL] ^ ctrl_pressed )
-        #alt_ok =  not (keybinding[configuration.MODIFIER_ALT] ^ alt_pressed )
-        #shift_ok = not (keybinding[configuration.MODIFIER_SHIFT] ^ shift_pressed )
-
-        if ctrl_ok and key_pressed or event.keyval == gtk.keysyms.period or event.keyval == gtk.keysyms.parenleft:
-            return self.display_completions(view, event)
+        alt_ok =  not (keybinding[configuration.MODIFIER_ALT] ^ alt_pressed )
+        shift_ok = not (keybinding[configuration.MODIFIER_SHIFT] ^ shift_pressed )
         
+        keyval = Gdk.keyval_from_name(keybinding[configuration.KEY])
+        key_ok = (event.keyval == keyval)
+        
+        if event.keyval == Gdk.KEY_period:
+            return self.display_completions(view, event)
+        elif ctrl_ok and alt_ok and shift_ok and key_ok:
+            return self.display_completions(view, event)
+
         return self.cancel()
 
     def on_window_tab_added(self, window, tab):
         """Connect the document and view in tab."""
         self.connect_view(tab.get_view())
-        self.status = window.get_statusbar ()
-        self.context = window.get_statusbar ().get_context_id ("haxe type")
 
 
     def show_popup(self, view, completions, tempstr=""):
+                
+        self.islaunching = True
+        self.tempstring = ""
+        
         """Show the completion window."""
         # Determine the position in x, y of the insert mark to later place the window
-        wd = gtk.TEXT_WINDOW_TEXT
+        wd = Gtk.TextWindowType.TEXT
         doc = view.get_buffer ()
         rect = view.get_iter_location(doc.get_iter_at_mark (doc.get_insert()))
         x, y = view.buffer_to_window_coords(wd, rect.x, rect.y)
@@ -218,6 +227,6 @@ class CompletionPlugin(gedit.Plugin):
         # FIXME : Position should depend on the font.
         popup.move(root_x + x + 24, root_y + y + 44)
         # Set the completion list
+
         popup.set_completions(completions, tempstr)
         popup.show_all()
-        

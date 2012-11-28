@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema path="/org/gnome/gedit/plugins/haxecodecompletion/" id="org.gnome.gedit.plugins.haxecodecompletion" gettext-domain="gedit">
+    <key type="s" name="keybinding-complete">
+      <default>'ctrl+alt+space'</default>
+      <summary>Keybinding to complete code</summary>
+      <description>Combinations of keys used to complete code</description>
+    </key>
+    <key type="b" name="dot-complete">
+      <default>true</default>
+      <summary>Complete after typing a dot</summary>
+      <description>Setting for completion after typing a dot</description>
+    </key>
+    <key type="s" name="hxml-uri">
+      <default>'None'</default>
+      <summary>Path to hxml file used for autocompletion</summary>
+      <description>Path to hxml file used for autocompletion</description>
+    </key>
+  </schema>
+</schemalist>

@@ -20,11 +20,18 @@ This code is alpha, it doesn't do very much input validation!
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-import gconf
+#import gconf
+from gi.repository import Gio
 
-GCONF_PLUGIN_PATH = "/apps/gedit-2/plugins/haxecodecompletion/"
-GCONF_KEYBINDING_COMPLETE = GCONF_PLUGIN_PATH + "keybindings/complete"
-DEFAULT_KEYBINDING_COMPLETE = "ctrl+alt+space"
+#GCONF_PLUGIN_PATH = "/apps/gedit-2/plugins/haxecodecompletion/"
+CONSOLE_KEY_BASE = 'org.gnome.gedit.plugins.haxecodecompletion'
+#GCONF_KEYBINDING_COMPLETE = GCONF_PLUGIN_PATH + "keybindings/complete"
+GCONF_KEYBINDING_COMPLETE = 'keybinding-complete'
+GCONF_DOT_COMPLETE = 'dot-complete'
+
+DEFAULT_KEYBINDING_COMPLETE = "ctrl+space"
+DEFAULT_DOT_COMPLETE = True
+
 MODIFIER_CTRL = "ctrl"
 MODIFIER_ALT = "alt"
 MODIFIER_SHIFT = "shift"
@@ -33,14 +40,43 @@ HXML_FILE = None
 
 HAXE_EXEC_PATH = "haxe"
 
-__client = gconf.client_get_default ();
-#_client.add_dir(GCONF_PLUGIN_PATH, gconf.CLIENT_PRELOAD_NONE)
-__client.add_dir("/apps/gedit-2", gconf.CLIENT_PRELOAD_NONE)
+#__client = gconf.client_get_default ();
+#__client.add_dir("/apps/gedit-2", gconf.CLIENT_PRELOAD_NONE)#_client.add_dir(GCONF_PLUGIN_PATH, gconf.CLIENT_PRELOAD_NONE)
+__client = Gio.Settings.new("org.gnome.gedit.plugins.haxecodecompletion")
 
 # Cached keybinding
 __keybindingComplete = ""
 __keybindingCompleteTuple = {}
 
+__dotComplete = True
+
+def getDotComplete():
+    """
+    Returns a boolean (as flag to toggle dot completion) from configuration file, e.g. "True"
+    """
+    global __dotComplete
+    __dotComplete = DEFAULT_DOT_COMPLETE
+    dot = __client.get_boolean(GCONF_DOT_COMPLETE)
+    
+    #print "popup event.keyval %s" % event.keyval
+    """
+    if not dot:
+        __dotComplete = DEFAULT_DOT_COMPLETE
+    else:
+        __dotComplete = dot
+    """
+    
+    __dotComplete = dot
+    return __dotComplete
+
+def setDotComplete(dot):
+    """
+    Saves a boolean with the value used to toglle  dot code completion to the gconf entry, e.g. "False".
+    """
+    global __dotComplete
+    __client.set_boolean(GCONF_DOT_COMPLETE, dot)
+    __dotComplete = dot
+    
 def getKeybindingComplete():
     """
     Returns a string with the keybinding used to do code completion from the
