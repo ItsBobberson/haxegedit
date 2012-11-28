@@ -58,7 +58,9 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
 
     proc = subprocess.Popen (command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=basedir)
     out = proc.communicate ()
+    
     """
+    print command
     print "proc.returncode:"
     print proc.returncode
     print "-------------------"
@@ -69,6 +71,7 @@ def get_program_output (basedir, classname, fullpath, origdoc, offset, hxmlfile,
     print out[1]
     print "-------------------"
     """
+    
     str = out[1]
     begin = str.find ("<list>")
     if begin != -1:

@@ -1,14 +1,9 @@
-You need to run the install as root!
-The install script needs at least once access to /usr/share/glib-2.0/schemas for the settings file 
+Currently, you need to run the install script with root priviliges.
+The install script needs (at least once) access to /usr/share/glib-2.0/schemas for the settings file 
 (this will change in the future)
 
 (first) Install command:
 sudo install-all
 
-For next installs or updates you can install as user
-command:
+For next installs or updates you can install as user, command:
 install-all
-
-You can also manually install as root for /usr/share/glib-2.0/schemas
-and install the plugins as user
-

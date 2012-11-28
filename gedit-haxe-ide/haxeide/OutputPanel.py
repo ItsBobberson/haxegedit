@@ -155,25 +155,38 @@ class OutputPanel(GObject.Object, Gedit.WindowActivatable):
                 #print lineNumber
                 break
         
-        #get character range
+        #get characters or lines range
+        characterRange="0-0"
+        lineRange="0-0"
+        
         lineNumberEnd.forward_char()#skip colon
         lineNumberEnd.forward_char()#skip space
+        
+        rangeStart = lineNumberEnd.copy()
         lineNumberEnd.forward_word_end()#skip 'characters'
+        rangeType = unicode (doc.get_text (rangeStart, lineNumberEnd.copy(), include_hidden_chars=True))
+        
         lineNumberEnd.forward_char()#skip space
         characterRangeEnd = lineNumberEnd.copy()
         while characterRangeEnd.forward_char():
             char = unicode(characterRangeEnd.get_char())
             if char == " ":
-                characterRange = unicode (doc.get_text (lineNumberEnd, characterRangeEnd, include_hidden_chars=True))
+                tempRange = unicode (doc.get_text (lineNumberEnd, characterRangeEnd, include_hidden_chars=True))
+                if rangeType == "characters":
+                    characterRange = tempRange
+                elif rangeType == "lines":
+                    lineRange = tempRange;
                 #print characterRange
+                #print lineRange
                 break
         
         #get error
         characterRangeEnd.forward_char()#skip space
         characterRangeEnd.forward_char()#skip colon
         characterRangeEnd.forward_char()#skip space
+        
         errorEnd = characterRangeEnd.copy()
         errorEnd.forward_sentence_end()
         error = unicode (doc.get_text (characterRangeEnd, errorEnd, include_hidden_chars=True))
         
-        return {'errorLine':currentLine, 'fileLocation':fileLocation, 'lineNumber':lineNumber, 'characterRange':characterRange, 'error':error}
+        return {'errorLine':currentLine, 'fileLocation':fileLocation, 'lineNumber':lineNumber, 'characterRange':characterRange, 'lineRange':lineRange, 'error':error}
