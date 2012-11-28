@@ -15,6 +15,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def __init__(self):
         GObject.Object.__init__(self)
         self.name = "haxeide"
+        self.busy=False;
         
     def do_activate(self):
         self.toolBar = ToolBar(self)
@@ -39,6 +40,18 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         pass
              
     def on_view_key_press_event(self, view, event):
+        """
+        doc = self.window.get_active_document()
+        try:
+            if not doc.get_uri_for_display().endswith ('hx'):
+                return
+        except:
+            return
+        if doc.is_untouched():
+            return
+        Gedit.commands_save_document(self.window, doc)
+        self.build()
+        """
         #print "view event.keyval %s" % event.keyval
         if self.toolBar.buildButton.get_sensitive() :
             keybinding = Configuration.getKeybindingBuildTuple()
@@ -68,7 +81,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.bottomPanel.setText(out[1])
         else:
             self.openFile(destinationFolder + "/" + folderName, "build.hxml", True)
-            self.openFile(destinationFolder + "/" + folderName + "/src" , "Main.hx", True)
+            self.openFile(destinationFolder + "/" + folderName + "/" + "src" , "Main.hx", True)
+            self.setFileBrowserRoot(destinationFolder + "/" + folderName)
 
     def openFile(self, folderPath, fileName, jumpTo):
         uri = "file://" + "/" + folderPath + "/" + fileName
@@ -80,8 +94,13 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.window.set_active_tab(tab)
             if fileName.endswith(".hxml"):
                 self.setHxml()
+  
+    def openProject(self, hxmlFile ):
+        fileName = os.path.basename(hxmlFile)
+        folderPath =  os.path.dirname(hxmlFile)
+        self.openFile(folderPath, fileName, True)
         self.setFileBrowserRoot(folderPath)
-                
+        
     def setFileBrowserRoot(self, location):
         object_path = '/plugins/filebrowser'
         method = "set_root"
@@ -100,9 +119,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
             #print relies on the file browser plugin
-            
-    def openProject(self, folder ):
-        print "folder %s" %folder
 
     def setHxml(self):
         doc = self.window.get_active_document()
@@ -138,6 +154,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.build()
             
     def build(self):
+        if self.busy:
+            return
+        self.busy = True
         command = ["haxe", self.hxmlPath]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.dirname(self.hxmlPath))
         out = proc.communicate()
@@ -152,6 +171,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         except Exception, e:
             bottom_panel.set_property("visible", True)
             self.bottomPanel.setText(e)
+        self.busy = False
             
     def saveSession(self):
         print "TODO saveSession()"

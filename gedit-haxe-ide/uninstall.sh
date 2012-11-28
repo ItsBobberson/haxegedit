@@ -5,9 +5,9 @@ USER_GEDIT_PLUGINS_FOLDER="$HOME/.local/share/gedit/plugins"
 USER_ICONS_FOLDER="$HOME/.local/share/icons"
 
 #root paths
+ROOT_GEDIT_PLUGINS_FOLDER="/usr/lib/gedit/plugins"
 ROOT_GEDIT_SCHEMAS_FOLDER="/usr/share/glib-2.0/schemas"
 ROOT_GEDIT_PLUGINS_DATA_FOLDER="/usr/share/gedit/plugins/haxeide"
-ROOT_GEDIT_PLUGINS_FOLDER="/usr/share/gedit/plugins"
 ROOT_ICONS_FOLDER="/usr/share/icons"
 
 remove_file() 
