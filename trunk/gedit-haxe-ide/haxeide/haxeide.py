@@ -1,11 +1,14 @@
 from gi.repository import Gdk, Gedit, Gio, GObject, Gtk, PeasGtk
-from BottomPanel import BottomPanel
+from OutputPanel import OutputPanel
+from DebuggerPanel import DebuggerPanel
+from DebuggerInfoPanel import DebuggerInfoPanel
 from ConfigurationWindow import ConfigurationWindow
 #from SidePanel import SidePanel
 from SettingsFrame import SettingsFrame
 from ToolBar import ToolBar
 import Configuration
 import os
+import sys
 import subprocess
 
 class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
@@ -16,13 +19,15 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         GObject.Object.__init__(self)
         self.name = "haxeide"
         self.busy=False;
-        
-        
+
     def do_activate(self):
         self.dataDir = self.plugin_info.get_data_dir()
         self.toolBar = ToolBar(self)
         #self.sidePanel = SidePanel(self)
-        self.bottomPanel = BottomPanel(self)
+        
+        self.outputPanel = OutputPanel(self)
+        self.debuggerInfoPanel = DebuggerInfoPanel(self)
+        self.debuggerPanel = DebuggerPanel(self)
         self.handlerId = self.window.connect("key-press-event", self.on_view_key_press_event)
         
     def showHaxeWindow(self):
@@ -31,7 +36,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     def do_deactivate(self):
         self.toolBar.remove()
         #self.sidePanel.remove()
-        self.bottomPanel.remove()
+        self.debuggerInfoPanel.remove()
+        self.outputPanel.remove()
+        self.debuggerPanel.remove()
         Configuration.setHxml("")
         self.window.disconnect(self.handlerId)
         
@@ -57,7 +64,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.setHxml(hxml)
         else:
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
-            self.bottomPanel.setText(out[1])
+            self.outputPanel.activate()
+            self.outputPanel.setText(out[1])
 
     def openProject(self, hxml, useHxml, setRoot ):
         self.openFile(hxml, True)
@@ -102,7 +110,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         if not os.path.isfile(filePath):
             msg = "haxeide.py : 119 : not os.path.isfile(filePath) : " + filePath
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
-            self.bottomPanel.setText(msg)
+            self.outputPanel.activate()
+            self.outputPanel.setText(msg)
             print msg
             return
             
@@ -132,8 +141,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             side_panel.set_property("visible", True)
         else:
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
-            self.bottomPanel.setText("File browser plugin was not enabled or not installed.")
-            #print relies on the file browser plugin
+            self.outputPanel.activate()
+            self.outputPanel.setText("File browser plugin was not enabled or not installed.")
    
     def setActiveDocAsHxml(self):
         doc = self.window.get_active_document()
@@ -145,7 +154,8 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.toolBar.setHxml(hxml)
         
     def saveAndBuild(self):
-        self.bottomPanel.setText("")
+        self.outputPanel.activate()
+        self.outputPanel.setText("")
         unsavedDocuments = self.window.get_unsaved_documents()
         total = len(unsavedDocuments)
         if(total==0):
@@ -170,91 +180,164 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             return
         self.busy = True
         hxml = self.sf(Configuration.getHxml())
+
         command = ["haxe", hxml]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.dirname(hxml))
         out = proc.communicate()
+        
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        try:
-            if proc.returncode != 0:
-                bottom_panel.set_property("visible", True)
-                self.bottomPanel.setText(out[1])
-            else:
-                self.bottomPanel.setText("Building done.")
-                if Configuration.getAutoHideConsole():
-                    bottom_panel.set_property("visible", False)
-                
-                #os.system('bash')
-                
-                command = [os.path.dirname(hxml)+"/run.sh"]
-                command = ["gnome-terminal", "--command=run.sh"]# --command="+os.path.dirname(hxml)+"/run.sh"]
-                proc = subprocess.Popen(command,cwd=os.path.dirname(hxml),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                out = proc.communicate()
-                if proc.returncode != 0:
-                    bottom_panel.set_property("visible", True)
-                    self.bottomPanel.appendText(out[0])
-                    self.bottomPanel.appendText(out[1])
-                
-                #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
-
-        except Exception, e:
+        
+        if proc.returncode != 0:
             bottom_panel.set_property("visible", True)
-            self.bottomPanel.setText(e.__str__())
+            self.outputPanel.activate()
+            self.outputPanel.setText(out[1])
+            
+        else:
+            self.outputPanel.activate()
+            self.outputPanel.setText("Building done.\n")
+            
+            if Configuration.getAutoHideConsole():
+                bottom_panel.set_property("visible", False)
+            
+            self.runApplication(hxml)
+            
         self.busy = False
         
-    def tempdebug(self):
+    def runApplication(self, hxml):
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        command = ["/home/jan/Programs/adobe/flex_sdk_4.6.0.23201B/bin/fdb"]
-        bin=os.path.dirname(self.sf(Configuration.getHxml())) #"/home/jan/MyDocuments/haxe-test/debugger-test/bin"
-        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=bin)
-        line1 = proc.stdout.readline() # Adobe fdb (Flash Player Debugger) [build 23201]
-        line2 = proc.stdout.readline() # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
-        proc.stdout.flush()
-        self.bottomPanel.appendText(line1) 
-        self.bottomPanel.appendText(line2)
+        if not os.path.isfile(os.path.dirname(hxml)+"/run.sh"):
+            bottom_panel.set_property("visible", True)
+            self.outputPanel.activate()
+            self.outputPanel.appendText("Can't find " + os.path.dirname(hxml)+"/run.sh to test.\n")
+            return 
         
-        proc.stdin.write("info\n")
-        proc.stdin.flush()
-        
-        
-    def debug(self):
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        command = ["fdb"]
-        cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
-        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-
-        proc.stdin.write("run index.swf\n")
-        proc.stdin.flush()
-        proc.stdin.write("continue\n")
-        proc.stdin.flush()
-        
-        proc.stdout.flush()
-        
-        self.bottomPanel.appendText(proc.stdout.readline()) # Adobe fdb (Flash Player Debugger) [build 23201]
-        self.bottomPanel.appendText(proc.stdout.readline()) # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
-        self.bottomPanel.appendText(proc.stdout.readline()) # (fdb) Attempting to launch and connect to Player using URL
-        self.bottomPanel.appendText(proc.stdout.readline()) # index.swf
-        self.bottomPanel.appendText(proc.stdout.readline()) # Player connected; session starting.
-        self.bottomPanel.appendText(proc.stdout.readline()) # Set breakpoints and then type 'continue' to resume the session.
-        self.bottomPanel.appendText(proc.stdout.readline()) # [SWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf - 7,332 bytes after decompression
-        
-        #self.bottomPanel.appendText(proc.stdout.readline()) # (fdb) [UnloadSWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf
-        
-        proc.stdout.flush()
-        
-        proc.stdin.write("info stack\n")
-        proc.stdin.flush()
-
+        os.system("cd " +os.path.dirname(hxml)+";sh run.sh &")
         """
-        proc.stdin.write("info\n")
-        proc.stdin.flush()
+        p = os.popen("cd " +os.path.dirname(hxml)+";sh run.sh &","r")
+        bottom_panel.set_property("visible", True)
+        while 1:
+            line = p.readline()
+            if not line: break
+            self.bottomPanel.appendText(line+"\n")
+        """
+        """
+        command = [os.path.dirname(hxml)+"/run.sh"]
+        command = ["gnome-terminal", "--command=run.sh"]# --command="+os.path.dirname(hxml)+"/run.sh"]
+        proc = subprocess.Popen(command,cwd=os.path.dirname(hxml),stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = proc.communicate()
+        if proc.returncode != 0:
+        self.bottomPanel.set_property("visible", True)
+        self.bottomPanel.appendText(out[0])
+        self.bottomPanel.appendText(out[1])
+                
+        #r = os.system("bash /home/jan/MyDocuments/haxe-test/test3/run.sh")
+        """ 
         
-        Adobe fdb (Flash Player Debugger) [build 23201]
-        Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
-        +++ proc.stdin.write("info stack\n")
-        (fdb) Command not valid without a session.
-        +++ proc.stdin.write("info\n")
+    def readUntilFDB(self, proc, output):
+        result = ""
+        seqPromt = ["(","f","d","b",")"]
+        #seqQuit=["(","y", "o", "r", "n", ")"]
+        counter = 0
+        tempstr = ""
+        while True:
+            c = proc.stdout.read(1)
+            result = result +c
+            if output:
+                self.debuggerPanel.appendText(c)
+            if c == seqPromt[counter]:
+                counter = counter + 1
+                tempstr = tempstr + c
+                if tempstr == "(fdb)":
+                    counter = 0
+                    tempstr = ""
+                    break
+            else:
+                counter = 0
+                tempstr = ""
+        proc.stdout.flush()
+        return result
+        
+        
+    def sendDebugInfoCommand(self, cmd):
+        try:
+            self.proc
+        except:
+            self.debuggerPanel.appendText("no debugger running\n")
+            return ""
+        if self.proc == None:
+            self.debuggerPanel.appendText("no debugger running\n")
+            return ""
+        self.proc.stdin.write(cmd+"\n")
+        try:
+            self.proc.stdin.flush()
+        except:
+            return ""
+        return self.readUntilFDB(self.proc, False)
+        
+    def sendDebugCommand(self, cmd):
+        try:
+            self.proc
+        except:
+            self.debuggerPanel.appendText("no debugger running\n")
+            return
+        if self.proc == None:
+            self.debuggerPanel.appendText("no debugger running\n")
+            return
+        self.debuggerPanel.appendText(">>>"+cmd+"\n")
+        self.proc.stdin.write(cmd+"\n")
+        try:
+            self.proc.stdin.flush()
+        except:
+            return
+        if cmd == "continue":
+            self.readUntilFDB(self.proc, True)
+        elif cmd=="kill":
+            self.proc.stdin.write("y\n")
+            self.proc.stdin.flush()
+            self.debuggerPanel.appendText(">>>y\n")
+            
+        elif cmd == "quit" or cmd=="kill":
+            self.proc.stdin.write("y\n")
+            self.proc.stdin.flush()
+            self.proc = None
+            self.debuggerPanel.appendText(">>>y\n")
+        else:
+            self.readUntilFDB(self.proc, True)
+    
+    def debug(self, swf):
+        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+        bottom_panel.set_property("visible", True)
+        
+        side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
+        side_panel.set_property("visible", True)
+            
+        self.debuggerPanel.activate()
+        
+        command = ["fdb"]
+        #cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
+        cwd=os.path.dirname(self.sf(Configuration.getHxml()))
+        self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+        self.readUntilFDB(self.proc,True)
+
+        #self.proc.stdin.write("run index.swf\n")
+        self.proc.stdin.write("run "+swf+"\n")
+        self.proc.stdin.flush()
+        self.readUntilFDB(self.proc, True)
+        
+        #1
+        #Adobe fdb (Flash Player Debugger) [build 23201]
+        #Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
+        #(fdb) 
+        
+        #2
+        #Attempting to launch and connect to Player using URL
+        #index.swf
+        #Player connected; session starting.
+        #Set breakpoints and then type 'continue' to resume the session.
+        #[SWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf - 7,332 bytes after decompression
+        #(fdb)
+        
+        """
         (fdb) Generic command for showing things about the program being debugged.
         List of info subcommands:
         info arguments (i a)    Argument variables of current stack frame
@@ -272,21 +355,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         info variables (i v)    All global and static variable names
         Type 'help info' followed by info subcommand name for full documentation.
         """
-        
-        """
-        while True:
-            try:
-                line = proc.stdout.readline()
-                self.bottomPanel.appendText(line)
-                
-            except Exception, e:
-                print e
-                break
-                
-        """
 
-        
-           
     def on_view_key_press_event(self, view, event):
         """
         #build on key press (blocks)
