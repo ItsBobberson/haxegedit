@@ -144,10 +144,6 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         Configuration.setHxml(hxml)
         self.toolBar.setHxml(hxml)
         
-        #buf = self.window.get_active_view().get_buffer()
-        #hxmlText = unicode (buf.get_text (*buf.get_bounds (),include_hidden_chars=True), 'utf-8')
-        #self.sidePanel.setHxml(hxml)
-        
     def saveAndBuild(self):
         self.bottomPanel.setText("")
         unsavedDocuments = self.window.get_unsaved_documents()
@@ -205,11 +201,11 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             self.bottomPanel.setText(e.__str__())
         self.busy = False
         
-    def debug(self):
+    def tempdebug(self):
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
         bottom_panel.set_property("visible", True)
         command = ["/home/jan/Programs/adobe/flex_sdk_4.6.0.23201B/bin/fdb"]
-        bin="/home/jan/MyDocuments/haxe-test/debugger-test/bin"
+        bin=os.path.dirname(self.sf(Configuration.getHxml())) #"/home/jan/MyDocuments/haxe-test/debugger-test/bin"
         proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=bin)
         line1 = proc.stdout.readline() # Adobe fdb (Flash Player Debugger) [build 23201]
         line2 = proc.stdout.readline() # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
@@ -221,26 +217,63 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         proc.stdin.flush()
         
         
-    def tempdebug(self):
+    def debug(self):
         bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
         bottom_panel.set_property("visible", True)
-        command = ["/home/jan/Programs/adobe/flex_sdk_4.6.0.23201B/bin/fdb"]#, "run", "/home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf"]
-        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd="/home/jan/MyDocuments/haxe-test/debugger-test/bin")
+        command = ["fdb"]
+        cwd=os.path.dirname(self.sf(Configuration.getHxml()))+"/bin"
+        proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
 
-        #out = proc.communicate("info")
-        #print proc.returncode
-        #self.bottomPanel.appendText(out[0])
+        proc.stdin.write("run index.swf\n")
+        proc.stdin.flush()
+        proc.stdin.write("continue\n")
+        proc.stdin.flush()
         
-        #proc.stdin.write("run /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf")
-        
-        line1 = proc.stdout.readline() # Adobe fdb (Flash Player Debugger) [build 23201]
-        line2 = proc.stdout.readline() # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
         proc.stdout.flush()
-        self.bottomPanel.appendText(line1) 
-        self.bottomPanel.appendText(line2)
         
+        self.bottomPanel.appendText(proc.stdout.readline()) # Adobe fdb (Flash Player Debugger) [build 23201]
+        self.bottomPanel.appendText(proc.stdout.readline()) # Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
+        self.bottomPanel.appendText(proc.stdout.readline()) # (fdb) Attempting to launch and connect to Player using URL
+        self.bottomPanel.appendText(proc.stdout.readline()) # index.swf
+        self.bottomPanel.appendText(proc.stdout.readline()) # Player connected; session starting.
+        self.bottomPanel.appendText(proc.stdout.readline()) # Set breakpoints and then type 'continue' to resume the session.
+        self.bottomPanel.appendText(proc.stdout.readline()) # [SWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf - 7,332 bytes after decompression
+        
+        #self.bottomPanel.appendText(proc.stdout.readline()) # (fdb) [UnloadSWF] /home/jan/MyDocuments/haxe-test/debugger-test/bin/index.swf
+        
+        proc.stdout.flush()
+        
+        proc.stdin.write("info stack\n")
+        proc.stdin.flush()
+
+        """
         proc.stdin.write("info\n")
         proc.stdin.flush()
+        
+        Adobe fdb (Flash Player Debugger) [build 23201]
+        Copyright (c) 2004-2007 Adobe, Inc. All rights reserved.
+        +++ proc.stdin.write("info stack\n")
+        (fdb) Command not valid without a session.
+        +++ proc.stdin.write("info\n")
+        (fdb) Generic command for showing things about the program being debugged.
+        List of info subcommands:
+        info arguments (i a)    Argument variables of current stack frame
+        info breakpoints (i b)  Status of user-settable breakpoints
+        info display (i d)      Display list of auto-display expressions
+        info files (i f)        Names of targets and files being debugged
+        info functions (i fu)   All function names
+        info handle (i h)       How to handle a fault
+        info locals (i l)       Local variables of current stack frame
+        info scopechain (i sc)  Scope chain of current stack frame
+        info sources (i so)     Source files in the program
+        info stack (i s)        Backtrace of the stack
+        info swfs (i sw)        List of swfs in this session
+        info targets(i t)       Application being debugged
+        info variables (i v)    All global and static variable names
+        Type 'help info' followed by info subcommand name for full documentation.
+        """
+        
+        """
         while True:
             try:
                 line = proc.stdout.readline()
@@ -249,57 +282,9 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             except Exception, e:
                 print e
                 break
-        proc.stdout.flush()    
-       
+                
+        """
 
-        """
-        proc.stdin.write("info stack\n")
-        proc.stdin.flush()
-        
-        line = proc.stdout.readline() #(fdb) Command not valid without a session.
-        proc.stdout.flush()
-        self.bottomPanel.appendText(line)
-
-        proc.stdin.write("info stack\n")
-        proc.stdin.flush()
-        
-        line = proc.stdout.readline() #(fdb) Command not valid without a session.
-        proc.stdout.flush()
-        self.bottomPanel.appendText(line)
-        """
-        """
-        counter = 0
-        while True:
-            
-            line = proc.stdout.readline()
-            print counter
-            print line == ""
-            print line == "\n"
-            if len(line) >2:
-                 print line
-                self.bottomPanel.appendText(line)
-            else:
-                break
-            counter = counter + 1
-        """
-        """ 
-        while True:
-            line = proc.stdout.readline()
-            if line != '':
-                print line
-            else:
-                break
-        """  
-        
-        """
-        while True:
-            try:
-                line = proc.stdout.readline()
-                print line
-                self.bottomPanel.appendText(line)
-            except Exception, e:
-                print e
-        """
         
            
     def on_view_key_press_event(self, view, event):
@@ -331,6 +316,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         
             if ctrl_ok and alt_ok and shift_ok and key_ok:
                 self.saveAndBuild()
+                
     #sanitize file
     def sf(self, path):
         if path == None or path=="":
