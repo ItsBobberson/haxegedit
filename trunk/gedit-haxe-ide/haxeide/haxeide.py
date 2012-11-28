@@ -105,7 +105,7 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
             Gedit.App.get_default().get_active_window().get_bottom_panel().set_property("visible", True)
             self.outputPanel.activate()
             self.outputPanel.setText(msg)
-            print msg
+            #print msg
             return
         #gio_file = Gio.file_new_for_path(filePath)
         gio_file = Gio.file_new_for_uri("file://" + filePath)
@@ -303,6 +303,14 @@ class haxeide(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         self.readUntilFDB(self.proc, True)
 
     def on_view_key_press_event(self, view, event):
+        """
+        doc = self.window.get_active_document()
+        fullpath = doc.get_uri_for_display()
+        if fullpath.endswith ('hx'):
+            file = open (fullpath, "w")
+            file.write (origdoc)
+            file.close ()
+        """
         """
         #build on key press (blocks)
         doc = self.window.get_active_document()

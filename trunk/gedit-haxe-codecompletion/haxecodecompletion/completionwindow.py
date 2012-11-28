@@ -1,8 +1,10 @@
-from gi.repository import GObject, Gtk, Gdk, Gedit
+from gi.repository import GObject, Gtk, Gdk, Gio, Gedit
 import configuration
+import os
 import re
 import string
 import time
+
 
 class CompletionWindow(Gtk.Window):
     re_alpha = re.compile(r"\w+", re.UNICODE | re.MULTILINE)
@@ -168,18 +170,40 @@ class CompletionWindow(Gtk.Window):
                 else:
                     self.temp_add (event.string)
 
-
     def complete(self, hide=True):
+        dict = self.current_completions[ self.get_selected () ]
+        if 'abbr' in dict:
+            completion = dict['abbr']
+            completion = completion[len(self.tempstr):]
+            self.insert(completion)
+        elif 'error' in dict:
+            line = dict['error']
+            self.gotoError(line)
+        elif 'type' in dict:
+            pass
+            
+        if hide:
+            self.remove()
+    """        
+    def temp_complete(self, hide=True):
         try:
             completion = self.current_completions[ self.get_selected () ]['abbr']
             completion = completion[len(self.tempstr):]
-            self.insert (completion)
+            self.insert(completion)
             if hide:
                 self.remove()
             return True
         except:
+            try:
+                error = self.current_completions[ self.get_selected () ]['error']
+                self.gotoError(error)
+                if hide:
+                    self.remove()
+                    return True
+            except:
+                return False
             return False
-            
+    """        
     def remove(self):
         self.completions = None
         self.current_completions = []
@@ -247,4 +271,140 @@ class CompletionWindow(Gtk.Window):
     def set_font_description(self, font_desc):
         """Set the label's font description."""
         self.view.modify_font(font_desc)
+        
+    def gotoError(self, line):
+        if True:
+            errorInfo = self.parseErrorLine(line)
+            if errorInfo == None:
+                return True
+            characterRange = errorInfo['characterRange']
+            if characterRange.find('-') == -1:
+                characterRange = characterRange + "-" + characterRange
+            charRange = characterRange.split("-")
+            charRangeStart = int(charRange[0])
+            charRangeEnd = int(charRange[1])
+            lineNr = int(errorInfo['lineNumber'])
+            offset = charRangeEnd
+            if errorInfo['error'].startswith('Unexpected'):
+                offset = charRangeStart
 
+            if errorInfo['fileLocation'][0] == "/" :
+                path = "/" + errorInfo['fileLocation']
+            else:
+                hxml = self.sf(configuration.getHxml())
+                path = os.path.dirname(hxml) + "/" + errorInfo['fileLocation']
+                
+            gio_file = Gio.file_new_for_path(path)
+            tab = self.gedit_window.get_tab_from_location(gio_file)
+            if tab == None:
+                tab = self.gedit_window.create_tab_from_location(gio_file, None, lineNr, offset+1, False, True )
+            else:
+                self.gedit_window.set_active_tab(tab)
+                view = self.gedit_window.get_active_view()
+                buf = view.get_buffer() 
+                i = buf.get_iter_at_line_offset(lineNr - 1, offset)
+                buf.place_cursor(i)
+                view.scroll_to_cursor()
+
+            if errorInfo['error'].find(' should be ') != -1 or errorInfo['error'].startswith('Unknown identifier') or errorInfo['error'].startswith('Class not found'):
+                view = self.gedit_window.get_active_view()
+                buf = view.get_buffer()
+                
+                insertMark = buf.get_insert()
+                selectionBoundMark = buf.get_selection_bound()
+                startIter = buf.get_iter_at_mark(insertMark)
+                startIter.backward_chars(charRangeEnd - charRangeStart)
+                buf.move_mark(selectionBoundMark, startIter)
+                
+            if errorInfo['error'].startswith('Unexpected'):
+                view = self.gedit_window.get_active_view()
+                buf = view.get_buffer()
+                
+                insertMark = buf.get_insert()
+                selectionBoundMark = buf.get_selection_bound()
+                startIter = buf.get_iter_at_mark(insertMark)
+                startIter.forward_chars(charRangeEnd - charRangeStart)
+                buf.move_mark(selectionBoundMark, startIter)
+                
+            if errorInfo['error'].startswith("Invalid character"):
+                view = self.gedit_window.get_active_view()
+                buf = view.get_buffer()
+                
+                insertMark = buf.get_insert()
+                selectionBoundMark = buf.get_selection_bound()
+                startIter = buf.get_iter_at_mark(insertMark)
+                startIter.forward_chars(1)
+                buf.move_mark(selectionBoundMark, startIter)
+
+            return True
+            
+    def parseErrorLine(self, line):
+        doc = Gtk.TextBuffer() #self.textView.get_buffer()
+        doc.set_text(line)
+        iter = doc.get_iter_at_mark(doc.get_insert())
+        lineStart = iter.copy()
+        lineEnd = iter.copy()
+        lineStart.set_offset (iter.get_offset () - iter.get_line_offset ())
+        
+        #get the complete line
+        lineEnd.forward_to_line_end()
+        #currentLine = unicode (doc.get_text (lineStart, lineEnd, include_hidden_chars=True))
+        currentLine = line
+        if len(currentLine)==0:
+            return None
+        #print currentLine;
+        
+        
+        #get the file location
+        locationEnd = lineStart.copy()
+        while locationEnd.forward_char():
+            char = unicode(locationEnd.get_char())
+            if char == ":":
+                fileLocation = unicode (doc.get_text (lineStart, locationEnd, include_hidden_chars=True))
+                lineNumberEnd = locationEnd.copy()
+                #print fileLocation
+                break
+        try:
+            lineNumberEnd
+        except NameError:
+            return None
+            
+        #get the line number
+        locationEnd.forward_char()#skip colon
+        while lineNumberEnd.forward_char():
+            char = unicode(lineNumberEnd.get_char())
+            if char == ":":
+                lineNumber = unicode (doc.get_text (locationEnd, lineNumberEnd, include_hidden_chars=True))
+                #print lineNumber
+                break
+        
+        #get character range
+        lineNumberEnd.forward_char()#skip colon
+        lineNumberEnd.forward_char()#skip space
+        lineNumberEnd.forward_word_end()#skip 'characters'
+        lineNumberEnd.forward_char()#skip space
+        characterRangeEnd = lineNumberEnd.copy()
+        while characterRangeEnd.forward_char():
+            char = unicode(characterRangeEnd.get_char())
+            if char == " ":
+                characterRange = unicode (doc.get_text (lineNumberEnd, characterRangeEnd, include_hidden_chars=True))
+                #print characterRange
+                break
+        
+        #get error
+        characterRangeEnd.forward_char()#skip space
+        characterRangeEnd.forward_char()#skip colon
+        characterRangeEnd.forward_char()#skip space
+        errorEnd = characterRangeEnd.copy()
+        errorEnd.forward_sentence_end()
+        error = unicode (doc.get_text (characterRangeEnd, errorEnd, include_hidden_chars=True))
+        
+        return {'errorLine':currentLine, 'fileLocation':fileLocation, 'lineNumber':lineNumber, 'characterRange':characterRange, 'error':error}
+        
+    #sanitize file
+    def sf(self, path):
+        if path == None or path=="":
+            return path
+        if path[1]=="/":
+            return path[1:]
+        return path
