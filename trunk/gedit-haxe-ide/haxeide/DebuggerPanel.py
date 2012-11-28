@@ -14,7 +14,7 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
         self.dataDir = plugin.plugin_info.get_data_dir()
         self.geditWindow = plugin.window
         self.debugType = "fdb"
-        self.readFunc = self.readUntilFDB
+        self.eom = "("+self.debugType+")"
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file(self.dataDir + "/" + "ui" + "/" + "DebuggerBox.glade")
@@ -93,41 +93,27 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
             
     def remove(self):
         self.geditBottomPanel.remove_item(self.box)
-        
-    def onClearConsoleButton(self, button):
-        self.textView.get_buffer().set_text("")
-        
-    def onConsoleButtonClick(self, button):
-        txt = self.builder.get_object("consoleInput").get_text()
-        self.builder.get_object("consoleInput").set_text("")
-        self.sendDebugCommand(txt)
-
-    def setText(self, txt):
-        textBuffer = self.textView.get_buffer()
-        textBuffer.set_text(txt)
-        
-    def appendText(self, txt):
-        textBuffer = self.textView.get_buffer()
-        textBuffer.insert(textBuffer.get_end_iter(), txt)
-        self.textView.scroll_mark_onscreen(textBuffer.get_insert())
-        #self.textView.scroll_to_mark(textBuffer.get_insert(), 0)
-        
+    
+    
+    #    ToolBar Top File
+    
     def onBinFileInputChange(self, entry):
         if entry.get_text().endswith(".swf"):
             self.debugType = "fdb"
-            self.readFunc = self.readUntilFDB
+            self.eom = "(fdb)"
             self.builder.get_object("urlLabel").set_text("swf:")
-            self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
         else:
             self.debugType = "gdb"
-            self.readFunc = self.readUntilGDB
+            self.eom = "(gdb)"
             self.builder.get_object("urlLabel").set_text("cpp:")
-            self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
+            
+        self.builder.get_object("consoleLabel").set_text(self.debugType + ":")
             
     def onStartDebugButtonClick(self, button):
-        file = self.builder.get_object("urlInput").get_text()
         hxml = self.sf(Configuration.getHxml())
-        path = os.path.dirname(hxml) + "/" + file
+        hxmlDir = os.path.dirname(hxml)
+        file = self.builder.get_object("urlInput").get_text()
+        path = hxmlDir + "/" + file
         
         if not os.path.isfile(path):
             self.appendText("Could not find " + path)
@@ -135,13 +121,11 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
             self.builder.get_object("urlBox").hide()
             self.builder.get_object("buttonBox").show()
             
-        GObject.idle_add(self.debug, file)
-            
-    def onQuitButtonClick(self, button):
-        self.sendDebugCommand("quit")
-        self.builder.get_object("urlBox").show()
-        self.builder.get_object("buttonBox").hide()
-            
+        GObject.idle_add(self.runDebugger, file)
+    
+    
+    #    ToolBar Top Debug        
+
     def onBreakButtonClick(self, button):
         fileLine = self.getFileLine()
         if fileLine != None:
@@ -151,25 +135,152 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
         fileLine = self.getFileLine()
         if fileLine != None:
             self.sendDebugCommand("clear "+fileLine)
-            
+    
+    def onStepButtonClick(self, button):
+        self.sendDebugCommand("step")
+        
+    def onNextButtonClick(self, button):
+        self.sendDebugCommand("next")
+        
+    def onFinishButtonClick(self, button):
+        self.sendDebugCommand("finish")
+        
+    def onContinueButtonClick(self, button):
+        if self.debugType=="gdb" and self.gdbFirstRun:
+            self.gdbFirstRun=False
+            self.sendDebugCommand("run")
+        else:
+            self.sendDebugCommand("continue")
+        
     def onPauseButtonClick(self, button):    
         self.sendDebugCommand("break")
             
     def onKillButtonClick(self, button):    
         self.sendDebugCommand("kill")
+        self.sendDebugCommand("y")
+   
+    def onQuitButtonClick(self, button):
+        self.sendDebugCommand("quit")
+        self.sendDebugCommand("y")
+        self.proc = None
+        self.builder.get_object("urlBox").show()
+        self.builder.get_object("buttonBox").hide()
+   
     
-    def onNextButtonClick(self, button):
-        self.sendDebugCommand("next")
+    #   TextView Console
         
-    def onContinueButtonClick(self, button):
-        self.sendDebugCommand("continue")
+    def setText(self, txt):
+        textBuffer = self.textView.get_buffer()
+        textBuffer.set_text(txt)
         
-    def onFinishButtonClick(self, button):
-        self.sendDebugCommand("finish")
+    def appendText(self, txt):
+        textBuffer = self.textView.get_buffer()
+        textBuffer.insert(textBuffer.get_end_iter(), txt)
+        self.textView.scroll_mark_onscreen(textBuffer.get_insert())
+        #self.textView.scroll_to_mark(textBuffer.get_insert(), 0)
+    
+    
+    #   ToolBar Bottom
+    
+    def onClearConsoleButton(self, button):
+        self.textView.get_buffer().set_text("")
         
-    def onStepButtonClick(self, button):
-        self.sendDebugCommand("step")
+    def onConsoleButtonClick(self, button):
+        txt = self.builder.get_object("consoleInput").get_text()
+        self.builder.get_object("consoleInput").set_text("")
+        self.sendDebugCommand(txt)
+        if txt=="kill" or txt=="quit":
+            self.sendDebugCommand("y")
+
+   
+    #   Debugger
+     
+    def runDebugger(self, file):
+        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
+        bottom_panel.set_property("visible", True)
+        side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
+        side_panel.set_property("visible", True)   
+        self.activate()
+
+        command = [self.debugType]
+        hxmlDir = os.path.dirname(self.sf(Configuration.getHxml()))
         
+        self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=hxmlDir)
+        self.readUntilEOM(self.proc,True)
+
+        if self.debugType == "fdb":
+            self.sendDebugCommand("run " + file)
+        else:
+            self.gdbFirstRun = True
+            self.sendDebugCommand("file " + file)
+                
+    def sendDebugCommand(self, cmd):
+        #1 check
+        try:
+            if self.proc == None:
+                self.appendText("no debugger running\n")
+                return ""
+        except:
+            self.appendText("no debugger running\n")
+            return ""  
+        #2 write
+        self.appendText(">>>"+cmd+"\n")
+        self.proc.stdin.write(cmd+"\n")
+        self.proc.stdin.flush()
+        #3 avoid block
+        if cmd=="kill" or cmd=="quit" or cmd=="y":
+            return
+        #4 read
+        self.readUntilEOM(self.proc, True)
+        #5 update
+        if cmd=="step" or cmd == "next" or cmd=="finish" or cmd=="continue" or cmd=="run":
+            self.plugin.debuggerInfoPanel.setStack(True)
+            self.plugin.debuggerInfoPanel.setLocals()
+            self.plugin.debuggerInfoPanel.setArgs()
+            self.plugin.debuggerInfoPanel.setThis()
+            self.plugin.debuggerInfoPanel.setVariables()
+            self.plugin.debuggerInfoPanel.setBreakPoints()
+        elif cmd[0:6]=="break ":
+            self.plugin.debuggerInfoPanel.setBreakPoints()
+                   
+    def sendDebugInfoCommand(self, cmd):
+        #1 check
+        try:
+            if self.proc == None:
+                self.appendText("no debugger running\n")
+                return ""
+        except:
+            self.appendText("no debugger running\n")
+            return ""
+        #2 write    
+        self.proc.stdin.write(cmd+"\n")
+        self.proc.stdin.flush()
+        #3 read
+        return self.readUntilEOM(self.proc, False)
+
+    def readUntilEOM(self, proc, output):
+        result = ""
+        tempstr = ""
+        while True:
+            c = proc.stdout.read(1)
+            result = result + c
+            if output:
+                self.appendText(c)
+            if c == self.eom[len(tempstr)]:
+                tempstr = tempstr + c
+                if tempstr == self.eom:
+                    tempstr = ""
+                    break
+            elif c == self.eom[0]:
+                tempstr = c
+            else:
+                tempstr = ""
+        proc.stdout.flush()
+        return result
+
+        
+    #   Breakpoints helpers
+    
     def getFileLine(self):
         doc = self.geditWindow.get_active_document()
         uri = doc.get_uri_for_display()
@@ -213,139 +324,9 @@ class DebuggerPanel(GObject.Object, Gedit.WindowActivatable):
         lineOffset = len(lines)+1
         return fileName+':'+ str(lineOffset)
         
-    def debug(self, file):
-        bottom_panel = Gedit.App.get_default().get_active_window().get_bottom_panel()
-        bottom_panel.set_property("visible", True)
-        side_panel = Gedit.App.get_default().get_active_window().get_side_panel()
-        side_panel.set_property("visible", True)   
-        self.activate()
 
-        command = [self.debugType]
-        cwd=os.path.dirname(self.sf(Configuration.getHxml()))
-        
-        self.proc = subprocess.Popen(command, bufsize=-1, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-        self.readFunc(self.proc,True)
-
-        if self.debugType=="fdb":
-            self.proc.stdin.write("run "+file+"\n")
-        else:
-            self.gdbFirstRun=True
-            self.proc.stdin.write("file "+file+"\n")
-        self.proc.stdin.flush()
-        self.readFunc(self.proc, True) 
+    # Sanitize file
     
-    def sendDebugCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.appendText("no debugger running\n")
-            return
-        if self.proc == None:
-            self.appendText("no debugger running\n")
-            return
-        if cmd == "continue" and self.debugType=="gdb" and self.gdbFirstRun:
-            self.gdbFirstRun=False
-            self.appendText(">>>"+"run"+"\n")
-            self.proc.stdin.write("run"+"\n")
-        else:
-            self.appendText(">>>"+cmd+"\n")
-            self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return
-            
-        if cmd == "continue":
-            result = self.readFunc(self.proc, True)
-        elif cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.appendText(">>>y\n")  
-        elif cmd == "quit" or cmd=="kill":
-            self.proc.stdin.write("y\n")
-            self.proc.stdin.flush()
-            self.proc = None
-            self.appendText(">>>y\n")
-        else:
-            result = self.readFunc(self.proc, True)
-        
-        
-        if cmd=="step" or cmd == "next" or cmd=="finish" or cmd=="continue":
-            self.plugin.debuggerInfoPanel.setStack(True)
-            self.plugin.debuggerInfoPanel.setLocals()
-            self.plugin.debuggerInfoPanel.setArgs()
-            self.plugin.debuggerInfoPanel.setThis()
-            self.plugin.debuggerInfoPanel.setVariables()
-            self.plugin.debuggerInfoPanel.setBreakPoints()
-
-        if cmd[:5]=="break":
-            self.plugin.debuggerInfoPanel.setBreakPoints()
-                   
-    def sendDebugInfoCommand(self, cmd):
-        try:
-            self.proc
-        except:
-            self.appendText("no debugger running\n")
-            return ""
-        if self.proc == None:
-            self.appendText("no debugger running\n")
-            return ""
-        self.proc.stdin.write(cmd+"\n")
-        try:
-            self.proc.stdin.flush()
-        except:
-            return ""
-        return self.readFunc(self.proc, False)
-
-    def readUntilFDB(self, proc, output):
-        result = ""
-        seqPromt = ["(","f","d","b",")"]
-        #seqQuit=["(","y", "o", "r", "n", ")"]
-        counter = 0
-        tempstr = ""
-        while True:
-            c = proc.stdout.read(1)
-            result = result + c
-            if output:
-                self.appendText(c)
-            if c == seqPromt[counter]:
-                counter = counter + 1
-                tempstr = tempstr + c
-                if tempstr == "(fdb)":
-                    counter = 0
-                    tempstr = ""
-                    break
-            else:
-                counter = 0
-                tempstr = ""
-        proc.stdout.flush()
-        return result
- 
-    def readUntilGDB(self, proc, output):
-        result = ""
-        seqPromt = ["(","g","d","b",")"]
-        #seqQuit=["(","y", "o", "r", "n", ")"]
-        counter = 0
-        tempstr = ""
-        while True:
-            c = proc.stdout.read(1)
-            result = result +c
-            if output:
-                self.appendText(c)
-            if c == seqPromt[counter]:
-                counter = counter + 1
-                tempstr = tempstr + c
-                if tempstr == "(gdb)":
-                    counter = 0
-                    tempstr = ""
-                    break
-            else:
-                counter = 0
-                tempstr = ""
-        proc.stdout.flush()
-        return result
-        
-    #sanitize file
     def sf(self, path):
         if path == None or path=="":
             return path
