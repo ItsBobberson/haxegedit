@@ -1,0 +1,26 @@
+ _           __  __          _ _ _                  
+| |__   __ _ \ \/ /  ___  __| (_) |_   
+| '_ \ / _` | )  (  / _ \/ _` | | __|  
+| | | | (_| |/ _  \|  __/ (_| | | |_   
+|_| |_|\__,_| (_| | \___|\__,_|_|\__| 
+             \__, |                     
+             |___/
+
+INSTALLATION
+==================
+Currently, you need to run the install script with root privileges.
+The install script needs (at least once) access to /usr/share/glib-2.0/schemas for the settings file 
+(this will change in the future)
+
+Make the install-all script executable:
+
+	chmod +x install-all.sh
+
+Then execute it with root privileges:
+
+	sudo ./install-all.sh
+
+The first time you install the haxegedit, the script needs root privileges to work properly.
+For next installs or updates you can just install as user, using the command:
+	
+	./install-all.sh
