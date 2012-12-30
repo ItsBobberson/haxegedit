@@ -7,7 +7,7 @@
              |___/
 
 INSTALLATION
-==================
+============
 Currently, you need to run the install script with root privileges.
 The install script needs (at least once) access to /usr/share/glib-2.0/schemas for the settings file 
 (this will change in the future)
@@ -20,7 +20,7 @@ Then execute it with root privileges:
 
 	sudo ./install-all.sh
 
-The first time you install the haxegedit, the script needs root privileges to work properly.
+The first time you install the haxegedit plugin, the script needs root privileges to work properly.
 For next installs or updates you can just install as user, using the command:
 	
 	./install-all.sh
